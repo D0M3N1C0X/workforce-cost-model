@@ -54,6 +54,22 @@ def same_content(a: bytes, b: bytes) -> bool:
     return _entries(a) == _entries(b)
 
 
+def differences(a: bytes, b: bytes) -> list[str]:
+    """Which entries differ, with a little context around the first change in each."""
+    ea, eb = _entries(a), _entries(b)
+    out = []
+    for name in sorted(set(ea) | set(eb)):
+        x, y = ea.get(name), eb.get(name)
+        if x == y:
+            continue
+        if not isinstance(x, bytes) or not isinstance(y, bytes):
+            out.append(f"{name}: added, removed or an embedded file changed")
+            continue
+        i = next((k for k in range(min(len(x), len(y))) if x[k] != y[k]), min(len(x), len(y)))
+        out.append(f"{name}: {x[max(0, i - 60):i + 60]!r} -> {y[max(0, i - 60):i + 60]!r}")
+    return out
+
+
 def main(paths: list[str]) -> int:
     failed = 0
     for p in paths:
@@ -62,6 +78,8 @@ def main(paths: list[str]) -> int:
             print(f"same content: {p}")
         else:
             print(f"::error::{p} changed when rebuilt - the build is not deterministic")
+            for line in differences(committed, Path(p).read_bytes())[:10]:
+                print("  " + line)
             failed += 1
     return failed
 
