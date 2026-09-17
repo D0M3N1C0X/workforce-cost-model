@@ -1,0 +1,3 @@
+# Generated outputs: keep them out of the language bar and out of review diffs.
+reports/** linguist-generated
+*.xlsx binary
