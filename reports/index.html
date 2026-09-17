@@ -1,0 +1,202 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FY2027 People Cost: Italy and Poland</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --paper:#fbfcfd; --surface:#ffffff; --ink:#131a24; --ink-soft:#39434f; --muted:#5f6b7a;
+  --line:#e2e7ef; --line-strong:#c9d2df; --accent:#1d4ed8; --accent-wash:#eef3ff;
+  --flag:#b5352c; --flag-wash:#fdeceb; --ok:#0c6b59; --ok-wash:#e8f5f1;
+  --warn:#8a5a00; --warn-wash:#fdf3dc;
+  --plate:#fcfcfb; --plate-edge:#dde4ee; --shadow:0 1px 2px rgba(19,26,36,.06),0 8px 24px rgba(19,26,36,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0f141b; --surface:#161d26; --ink:#e7ecf3; --ink-soft:#c3cbd6; --muted:#8b97a6;
+    --line:#232c38; --line-strong:#33404f; --accent:#7ba4ff; --accent-wash:#17233a;
+    --flag:#f08a80; --flag-wash:#2e1b1a; --ok:#5fc6ae; --ok-wash:#12291f;
+    --warn:#f0c060; --warn-wash:#2e2512;
+    --plate:#1a1a19; --plate-edge:#2b3542; --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f141b; --surface:#161d26; --ink:#e7ecf3; --ink-soft:#c3cbd6; --muted:#8b97a6;
+  --line:#232c38; --line-strong:#33404f; --accent:#7ba4ff; --accent-wash:#17233a;
+  --flag:#f08a80; --flag-wash:#2e1b1a; --ok:#5fc6ae; --ok-wash:#12291f;
+  --warn:#f0c060; --warn-wash:#2e2512;
+  --plate:#1a1a19; --plate-edge:#2b3542; --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:17px; line-height:1.68; -webkit-font-smoothing:antialiased;
+}
+.page{padding:clamp(1.25rem,4vw,3.5rem) clamp(1rem,4vw,2rem) 5rem}
+.doc{display:grid; gap:1.5rem; justify-items:center}
+.doc > *{width:100%; max-width:42rem; margin:0}
+.doc > figure, .doc > .table-wrap{max-width:57rem}
+
+h1,h2,h3{font-family:"Source Serif 4",Georgia,"Times New Roman",serif; text-wrap:balance; margin:0}
+h1{font-size:clamp(2.1rem,5.5vw,3.1rem); font-weight:600; letter-spacing:-.015em; line-height:1.12}
+h2{font-size:clamp(1.5rem,3.4vw,2rem); font-weight:600; letter-spacing:-.01em;
+   display:flex; align-items:baseline; gap:.75rem; padding-top:2.5rem;
+   border-top:1px solid var(--line); margin-top:1.5rem}
+h2 .num{
+  font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.8rem;
+  font-weight:500; color:var(--accent); letter-spacing:.08em; transform:translateY(-.15em);
+}
+h3{font-size:1.22rem; font-weight:600; padding-top:1.25rem}
+p{margin:0; color:var(--ink-soft)}
+strong{color:var(--ink); font-weight:600}
+a{color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px}
+a:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:2px}
+
+.masthead{border-bottom:2px solid var(--ink); padding-bottom:1.5rem}
+.eyebrow{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.72rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:1rem
+}
+dl.meta{display:grid; grid-template-columns:auto 1fr; gap:.4rem 1.25rem; margin:1.4rem 0 0; font-size:.94rem}
+dl.meta dt{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.72rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--muted); padding-top:.28em
+}
+dl.meta dd{margin:0; color:var(--ink-soft)}
+
+.notice{
+  background:var(--accent-wash); border-left:3px solid var(--accent); border-radius:0 4px 4px 0;
+  padding:1rem 1.25rem; font-size:.95rem; color:var(--ink-soft)
+}
+p.note{font-size:.9rem; color:var(--muted)}
+
+figure{display:flex; flex-direction:column; gap:.6rem}
+figure .plate{
+  background:var(--plate); border:1px solid var(--plate-edge); border-radius:6px;
+  box-shadow:var(--shadow); padding:.5rem; overflow-x:auto
+}
+figure svg{display:block; width:100%; height:auto; min-width:32rem}
+figcaption{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.72rem; letter-spacing:.06em;
+  color:var(--muted); text-transform:uppercase
+}
+
+.table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:6px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:.92rem; font-variant-numeric:tabular-nums}
+th,td{padding:.62rem .9rem; text-align:left; border-bottom:1px solid var(--line)}
+thead th{
+  font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.68rem; font-weight:500;
+  letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
+  border-bottom:1px solid var(--line-strong); white-space:nowrap
+}
+tbody tr:last-child td{border-bottom:none}
+td.r,th.r{text-align:right}
+td.r{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.86rem}
+
+.pill{
+  display:inline-block; padding:.14em .6em; border-radius:999px; font-size:.72rem;
+  font-weight:600; letter-spacing:.02em; white-space:nowrap
+}
+.pill.flag{background:var(--flag-wash); color:var(--flag)}
+.pill.ok{background:var(--ok-wash); color:var(--ok)}
+.pill.warn{background:var(--warn-wash); color:var(--warn)}
+ul{margin:0; padding-left:1.2rem; display:grid; gap:.5rem; color:var(--ink-soft)}
+ul li::marker{color:var(--accent)}
+
+code{
+  font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.86em;
+  background:var(--accent-wash); color:var(--ink); padding:.1em .35em; border-radius:3px
+}
+ol{margin:0; padding-left:1.3rem; display:grid; gap:.75rem; color:var(--ink-soft)}
+ol li::marker{color:var(--accent); font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.85em}
+hr{border:none; height:1px; background:var(--line); margin:1rem 0}
+
+footer.colophon{
+  max-width:42rem; margin:3rem auto 0; padding-top:1.25rem; border-top:1px solid var(--line);
+  font-size:.85rem; color:var(--muted)
+}
+@media (max-width:640px){
+  body{font-size:16px}
+  dl.meta{grid-template-columns:1fr; gap:.15rem}
+  dl.meta dd{margin-bottom:.5rem}
+}
+</style>
+</head><body><div class="page"><article class="doc"><header class="masthead"><p class="eyebrow">Memo to the finance director &middot; FY2026 actual and FY2027 plan</p><h1>FY2027 people cost: Italy and Poland</h1>
+<dl class="meta"><dt>Scope</dt><dd>IT · Milan and PL · Kraków, 2,128 FTE on average in FY2026</dd><dt>Model</dt><dd>fully loaded cost per employee, FY2026 budget against actual, FY2027 month by month under four scenarios, in a live Excel model reconciled with pandas</dd><dt>Data</dt><dd>synthetic, the organisation analysed in <a href="https://github.com/D0M3N1C0X/hr-people-analytics">hr-people-analytics</a>; rates and caps for 2026 from the sources in <a href="https://github.com/D0M3N1C0X/workforce-cost-model/blob/main/docs/verification.md">docs/verification.md</a></dd></dl></header>
+<div class="notice">Fiscal years run July to June. The budget, growth plans, pay review and cost per hire are invented for the demonstration; the employer-cost rules are real and dated.</div>
+<h2><span>The answer</span></h2>
+<ul><li><strong>FY2026 closed €5.8M (5.7%) over budget, at €107.1M.</strong> Headcount ran ahead of plan: volume added €6.3M, the department mix €0.18M, while cheaper joiners saved €0.68M.</li><li><strong>FY2027 costs €111.0M in the base case (+3.6%).</strong> More FTE add €2.2M: the year opens with the headcount FY2026 closed on, and Customer Service, Tech and Sales keep growing. Cost per FTE adds €1.7M, where the January pay review (2.5% in Italy, 5.0% in Poland) adds €2.0M and the lower cost per FTE of the June 2026 workforce takes back €0.3M.</li><li><strong>A hiring freeze from October would cut FY2027 to €104.6M</strong> (−2.3%), but the year would close with 278 fewer FTE than the base case: a capacity decision, not a finance one.</li><li><strong>Higher attrition barely moves payroll but costs in hiring.</strong> With attrition 30% higher (5.3 points), vacancies offset the backfills, while recruitment rises to €1.54M (€0.33M more).</li><li><strong>Starting to close pay gaps in January 2027, before the first pay-transparency reports are due, adds €0.76M to FY2027</strong> and €1.52M in every full year after, loaded with employer costs. The gaps come from <a href="https://github.com/D0M3N1C0X/pay-transparency-readiness-kit">pay-transparency-readiness-kit</a>.</li></ul>
+<h2><span class="num">01</span><span>FY2026: where the budget went</span></h2>
+<figure><div class="plate"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 330" role="img" aria-label="Headcount ran 125 FTE ahead of plan on average"><style>
+  svg { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7;
+        --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --base:#0b0b0b; --up:#e34948; --down:#2a78d6; }
+  @media (prefers-color-scheme: dark) {
+    svg { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835;
+          --s1:#3987e5; --s2:#d95926; --s3:#199e70; --base:#ffffff; --up:#e66767; --down:#3987e5; }
+  }
+  text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--ink2); font-size: 12px; }
+  .title { fill: var(--ink); font-size: 15px; font-weight: 600; }
+  .muted { fill: var(--muted); font-size: 11px; }
+  .val { fill: var(--ink); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface);
+         stroke-width: 4px; stroke-linejoin: round; }
+</style><rect width="720" height="330" rx="8" fill="var(--surface)"/><text x="24" y="34" class="title">Headcount ran 125 FTE ahead of plan on average</text><text x="24" y="54">Month-end FTE, Italian and Polish entities together, July 2025 to June 2026</text><rect x="60" y="66" width="18" height="3" fill="var(--s2)"/><text x="84" y="71">Budget</text><rect x="150" y="66" width="18" height="3" fill="var(--s1)"/><text x="174" y="71">Actual</text><line x1="60" x2="610" y1="290.0" y2="290.0" stroke="var(--grid)"/><text x="52" y="294.0" text-anchor="end" class="muted">1,900</text><line x1="60" x2="610" y1="261.7" y2="261.7" stroke="var(--grid)"/><text x="52" y="265.7" text-anchor="end" class="muted">1,950</text><line x1="60" x2="610" y1="233.4" y2="233.4" stroke="var(--grid)"/><text x="52" y="237.4" text-anchor="end" class="muted">2,000</text><line x1="60" x2="610" y1="205.1" y2="205.1" stroke="var(--grid)"/><text x="52" y="209.1" text-anchor="end" class="muted">2,050</text><line x1="60" x2="610" y1="176.9" y2="176.9" stroke="var(--grid)"/><text x="52" y="180.9" text-anchor="end" class="muted">2,100</text><line x1="60" x2="610" y1="148.6" y2="148.6" stroke="var(--grid)"/><text x="52" y="152.6" text-anchor="end" class="muted">2,150</text><line x1="60" x2="610" y1="120.3" y2="120.3" stroke="var(--grid)"/><text x="52" y="124.3" text-anchor="end" class="muted">2,200</text><line x1="60" x2="610" y1="92.0" y2="92.0" stroke="var(--grid)"/><text x="52" y="96.0" text-anchor="end" class="muted">2,250</text><text x="60.0" y="314" text-anchor="middle" class="muted">Jul 25</text><text x="160.0" y="314" text-anchor="middle" class="muted">Sep 25</text><text x="260.0" y="314" text-anchor="middle" class="muted">Nov 25</text><text x="360.0" y="314" text-anchor="middle" class="muted">Jan 26</text><text x="460.0" y="314" text-anchor="middle" class="muted">Mar 26</text><text x="560.0" y="314" text-anchor="middle" class="muted">May 26</text><text x="610.0" y="314" text-anchor="middle" class="muted">Jun 26</text><path d="M60.0,242.5 L110.0,240.5 L160.0,238.6 L210.0,236.7 L260.0,234.7 L310.0,232.8 L360.0,230.9 L410.0,228.9 L460.0,227.0 L510.0,225.0 L560.0,223.1 L610.0,221.2" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="60.0" cy="242.5" r="7" fill="transparent"><title>Budget, Jul 25: 1,984.0 FTE</title></circle><circle cx="110.0" cy="240.5" r="7" fill="transparent"><title>Budget, Aug 25: 1,987.4 FTE</title></circle><circle cx="160.0" cy="238.6" r="7" fill="transparent"><title>Budget, Sep 25: 1,990.9 FTE</title></circle><circle cx="210.0" cy="236.7" r="7" fill="transparent"><title>Budget, Oct 25: 1,994.3 FTE</title></circle><circle cx="260.0" cy="234.7" r="7" fill="transparent"><title>Budget, Nov 25: 1,997.7 FTE</title></circle><circle cx="310.0" cy="232.8" r="7" fill="transparent"><title>Budget, Dec 25: 2,001.1 FTE</title></circle><circle cx="360.0" cy="230.9" r="7" fill="transparent"><title>Budget, Jan 26: 2,004.6 FTE</title></circle><circle cx="410.0" cy="228.9" r="7" fill="transparent"><title>Budget, Feb 26: 2,008.0 FTE</title></circle><circle cx="460.0" cy="227.0" r="7" fill="transparent"><title>Budget, Mar 26: 2,011.4 FTE</title></circle><circle cx="510.0" cy="225.0" r="7" fill="transparent"><title>Budget, Apr 26: 2,014.8 FTE</title></circle><circle cx="560.0" cy="223.1" r="7" fill="transparent"><title>Budget, May 26: 2,018.2 FTE</title></circle><circle cx="610.0" cy="221.2" r="7" fill="transparent"><title>Budget, Jun 26: 2,021.7 FTE</title></circle><circle cx="610.0" cy="221.2" r="4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/><text x="620.0" y="225.2" class="val">Budget 2,022</text><path d="M60.0,221.5 L110.0,214.8 L160.0,209.0 L210.0,189.6 L260.0,173.3 L310.0,152.9 L360.0,142.6 L410.0,131.4 L460.0,116.7 L510.0,117.1 L560.0,128.2 L610.0,136.2" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="60.0" cy="221.5" r="7" fill="transparent"><title>Actual, Jul 25: 2,021.0 FTE</title></circle><circle cx="110.0" cy="214.8" r="7" fill="transparent"><title>Actual, Aug 25: 2,033.0 FTE</title></circle><circle cx="160.0" cy="209.0" r="7" fill="transparent"><title>Actual, Sep 25: 2,043.2 FTE</title></circle><circle cx="210.0" cy="189.6" r="7" fill="transparent"><title>Actual, Oct 25: 2,077.4 FTE</title></circle><circle cx="260.0" cy="173.3" r="7" fill="transparent"><title>Actual, Nov 25: 2,106.2 FTE</title></circle><circle cx="310.0" cy="152.9" r="7" fill="transparent"><title>Actual, Dec 25: 2,142.4 FTE</title></circle><circle cx="360.0" cy="142.6" r="7" fill="transparent"><title>Actual, Jan 26: 2,160.6 FTE</title></circle><circle cx="410.0" cy="131.4" r="7" fill="transparent"><title>Actual, Feb 26: 2,180.4 FTE</title></circle><circle cx="460.0" cy="116.7" r="7" fill="transparent"><title>Actual, Mar 26: 2,206.4 FTE</title></circle><circle cx="510.0" cy="117.1" r="7" fill="transparent"><title>Actual, Apr 26: 2,205.6 FTE</title></circle><circle cx="560.0" cy="128.2" r="7" fill="transparent"><title>Actual, May 26: 2,186.0 FTE</title></circle><circle cx="610.0" cy="136.2" r="7" fill="transparent"><title>Actual, Jun 26: 2,171.8 FTE</title></circle><circle cx="610.0" cy="136.2" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"/><text x="620.0" y="140.2" class="val">Actual 2,172</text></svg>
+</div><figcaption>Budget and actual FTE</figcaption></figure>
+<figure><div class="plate"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 464" role="img" aria-label="Volume explains the FY2026 overrun"><style>
+  svg { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7;
+        --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --base:#0b0b0b; --up:#e34948; --down:#2a78d6; }
+  @media (prefers-color-scheme: dark) {
+    svg { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835;
+          --s1:#3987e5; --s2:#d95926; --s3:#199e70; --base:#ffffff; --up:#e66767; --down:#3987e5; }
+  }
+  text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--ink2); font-size: 12px; }
+  .title { fill: var(--ink); font-size: 15px; font-weight: 600; }
+  .muted { fill: var(--muted); font-size: 11px; }
+  .val { fill: var(--ink); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface);
+         stroke-width: 4px; stroke-linejoin: round; }
+</style><rect width="720" height="464" rx="8" fill="var(--surface)"/><text x="24" y="34" class="title">Volume explains the FY2026 overrun</text><text x="24" y="54">FY2026 cost against budget, by effect</text><rect x="150" y="66" width="12" height="12" rx="2" fill="var(--up)"/><text x="168" y="76">Adds cost</text><rect x="260" y="66" width="12" height="12" rx="2" fill="var(--down)"/><text x="278" y="76">Saves cost</text><text x="24" y="104" class="val" style="font-weight:600">IT · Milan</text><text x="24" y="122" class="muted">Budget €57.7M → actual €60.8M</text><line x1="410.0" x2="410.0" y1="128" y2="240" stroke="var(--axis)"/><text x="182" y="154.0" text-anchor="end">Volume</text><rect x="410.0" y="140" width="220.0" height="20" rx="3" fill="var(--up)"><title>IT · Milan volume: €3.51M</title></rect><text x="636.0" y="154.0" text-anchor="start" class="val">+€3.51M</text><text x="182" y="190.0" text-anchor="end">Mix</text><rect x="410.0" y="176" width="3.9" height="20" rx="3" fill="var(--up)"><title>IT · Milan mix: €0.06M</title></rect><text x="419.9" y="190.0" text-anchor="start" class="val">+€0.06M</text><text x="182" y="226.0" text-anchor="end">Rate</text><rect x="377.8" y="212" width="32.2" height="20" rx="3" fill="var(--down)"><title>IT · Milan rate: €-0.51M</title></rect><text x="371.8" y="226.0" text-anchor="end" class="val">−€0.51M</text><text x="24" y="284" class="val" style="font-weight:600">PL · Kraków</text><text x="24" y="302" class="muted">Budget €43.6M → actual €46.3M</text><line x1="410.0" x2="410.0" y1="308" y2="420" stroke="var(--axis)"/><text x="182" y="334.0" text-anchor="end">Volume</text><rect x="410.0" y="320" width="174.8" height="20" rx="3" fill="var(--up)"><title>PL · Kraków volume: €2.79M</title></rect><text x="590.8" y="334.0" text-anchor="start" class="val">+€2.79M</text><text x="182" y="370.0" text-anchor="end">Mix</text><rect x="410.0" y="356" width="7.7" height="20" rx="3" fill="var(--up)"><title>PL · Kraków mix: €0.12M</title></rect><text x="423.7" y="370.0" text-anchor="start" class="val">+€0.12M</text><text x="182" y="406.0" text-anchor="end">Rate</text><rect x="399.3" y="392" width="10.7" height="20" rx="3" fill="var(--down)"><title>PL · Kraków rate: €-0.17M</title></rect><text x="393.3" y="406.0" text-anchor="end" class="val">−€0.17M</text></svg>
+</div><figcaption>Variance bridge</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th>Employer</th><th class="r">Budget</th><th class="r">Actual</th><th class="r">Volume</th><th class="r">Mix</th><th class="r">Rate</th><th class="r">Variance</th></tr></thead><tbody><tr><td>IT · Milan</td><td class="r">€57.7M</td><td class="r">€60.8M</td><td class="r">€3.51M</td><td class="r">€0.06M</td><td class="r">−€0.51M</td><td class="r">€3.06M (5.3%)</td></tr><tr><td>PL · Kraków</td><td class="r">€43.6M</td><td class="r">€46.3M</td><td class="r">€2.79M</td><td class="r">€0.12M</td><td class="r">−€0.17M</td><td class="r">€2.74M (6.3%)</td></tr></tbody></table></div>
+<p class="note">Volume: FTE above plan at budget cost per FTE. Mix: departments with higher cost per FTE grew more. Rate: actual against budget cost per FTE, at actual FTE.</p>
+<p>The five largest overruns by department:</p>
+<div class="table-wrap"><table><thead><tr><th>Employer</th><th>Department</th><th class="r">Budget FTE</th><th class="r">Actual FTE</th><th class="r">Variance</th><th class="r">of which volume</th></tr></thead><tbody><tr><td>IT · Milan</td><td>Operations</td><td class="r">226</td><td class="r">245</td><td class="r">€1,019k</td><td class="r">€1,127k</td></tr><tr><td>PL · Kraków</td><td>Tech</td><td class="r">164</td><td class="r">180</td><td class="r">€735k</td><td class="r">€873k</td></tr><tr><td>PL · Kraków</td><td>Operations</td><td class="r">262</td><td class="r">283</td><td class="r">€631k</td><td class="r">€824k</td></tr><tr><td>IT · Milan</td><td>Sales</td><td class="r">112</td><td class="r">119</td><td class="r">€626k</td><td class="r">€390k</td></tr><tr><td>IT · Milan</td><td>Finance</td><td class="r">90</td><td class="r">101</td><td class="r">€578k</td><td class="r">€748k</td></tr></tbody></table></div>
+<p>All 12 departments ran above planned FTE. The largest overruns were in Operations (IT · Milan), Tech (PL · Kraków) and Operations (PL · Kraków), where extra headcount met a high cost per FTE.</p>
+<h2><span class="num">02</span><span>What a fully loaded employee costs</span></h2>
+<div class="table-wrap"><table><thead><tr><th>Employer</th><th class="r">Cost per FTE, June 2026</th><th class="r">Employer social contributions</th><th class="r">TFR</th><th>Contribution rules</th></tr></thead><tbody><tr><td>IT · Milan</td><td class="r">€59,382</td><td class="r">29.8% of gross pay</td><td class="r">7.0% of gross pay</td><td>INPS pension 23.81%, other INPS and INAIL 6.0% (illustrative), TFR at base pay / 13.5</td></tr><tr><td>PL · Kraków</td><td class="r">€41,727</td><td class="r">20.7% of gross pay</td><td class="r">-</td><td>ZUS pension 9.76% and disability 6.50% up to the annual cap; accident 1.67%, Labour Fund 2.45%, FGŚP 0.10%, PPK 1.5% on 50% of pay</td></tr></tbody></table></div>
+<p class="note">Gross pay is base pay at contracted FTE plus target bonus. In Poland, 79 of 1,362 employees earn above the 2026 cap of 282,600 PLN (€66,388 at 4.2568 PLN per euro), so their pension and disability contributions stop part-way through the year.</p>
+<h2><span class="num">03</span><span>FY2027 under four scenarios</span></h2>
+<figure><div class="plate"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 304" role="img" aria-label="FY2027 people cost ranges from €104.6M to €111.7M"><style>
+  svg { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7;
+        --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --base:#0b0b0b; --up:#e34948; --down:#2a78d6; }
+  @media (prefers-color-scheme: dark) {
+    svg { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835;
+          --s1:#3987e5; --s2:#d95926; --s3:#199e70; --base:#ffffff; --up:#e66767; --down:#3987e5; }
+  }
+  text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--ink2); font-size: 12px; }
+  .title { fill: var(--ink); font-size: 15px; font-weight: 600; }
+  .muted { fill: var(--muted); font-size: 11px; }
+  .val { fill: var(--ink); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface);
+         stroke-width: 4px; stroke-linejoin: round; }
+</style><rect width="720" height="304" rx="8" fill="var(--surface)"/><text x="24" y="34" class="title">FY2027 people cost ranges from €104.6M to €111.7M</text><text x="24" y="54">FY2027 people cost (payroll and pay-equity remediation), both entities. The axis starts above zero.</text><line x1="451.1" x2="451.1" y1="84" y2="256" stroke="var(--ink2)" stroke-width="1.5"/><text x="451.1" y="78" text-anchor="middle" class="muted">FY2026 actual €107.1M</text><text x="158" y="120.0" text-anchor="end" class="val">Base</text><path d="M170,106 H530.9547263030163 Q534.9547263030163,106 534.9547263030163,110 V122 Q534.9547263030163,126 530.9547263030163,126 H170 Z" fill="var(--s1)"><title>Base: €110.97M, change +3.6%; hiring cost €1.22M</title></path><text x="543.0" y="120.0" class="val">€111.0M (+3.6%)</text><text x="158" y="160.0" text-anchor="end" class="val">Hiring freeze</text><path d="M170,146 H393.2506494438295 Q397.2506494438295,146 397.2506494438295,150 V162 Q397.2506494438295,166 393.2506494438295,166 H170 Z" fill="var(--s1)"><title>Hiring freeze: €104.63M, change -2.3%; hiring cost €0.27M</title></path><text x="405.3" y="160.0" class="val">€104.6M (−2.3%)</text><text x="158" y="200.0" text-anchor="end" class="val">High attrition</text><path d="M170,186 H524.3646981299321 Q528.3646981299321,186 528.3646981299321,190 V202 Q528.3646981299321,206 524.3646981299321,206 H170 Z" fill="var(--s1)"><title>High attrition: €110.67M, change +3.3%; hiring cost €1.54M</title></path><text x="536.4" y="200.0" class="val">€110.7M (+3.3%)</text><text x="158" y="240.0" text-anchor="end" class="val">Pay equity first</text><path d="M170,226 H547.465571666775 Q551.465571666775,226 551.465571666775,230 V242 Q551.465571666775,246 547.465571666775,246 H170 Z" fill="var(--s1)"><title>Pay equity first: €111.73M, change +4.3%; hiring cost €1.22M</title></path><text x="559.5" y="240.0" class="val">€111.7M (+4.3%)</text></svg>
+</div><figcaption>Scenario costs</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th>Scenario</th><th class="r">People cost</th><th class="r">Change vs FY2026</th><th class="r">Average FTE</th><th class="r">Closing FTE</th><th class="r">Hires</th><th class="r">Hiring cost</th><th class="r">Remediation</th></tr></thead><tbody><tr><td>Base</td><td class="r">€111.0M</td><td class="r">+3.6%</td><td class="r">2,172</td><td class="r">2,172</td><td class="r">382</td><td class="r">€1.22M</td><td class="r">-</td></tr><tr><td>Hiring freeze</td><td class="r">€104.6M</td><td class="r">−2.3%</td><td class="r">2,049</td><td class="r">1,895</td><td class="r">86</td><td class="r">€0.27M</td><td class="r">-</td></tr><tr><td>High attrition</td><td class="r">€110.7M</td><td class="r">+3.3%</td><td class="r">2,166</td><td class="r">2,161</td><td class="r">484</td><td class="r">€1.54M</td><td class="r">-</td></tr><tr><td>Pay equity first</td><td class="r">€111.7M</td><td class="r">+4.3%</td><td class="r">2,172</td><td class="r">2,172</td><td class="r">382</td><td class="r">€1.22M</td><td class="r">€0.76M</td></tr></tbody></table></div>
+<p class="note">People cost = payroll plus pay-equity remediation; hiring cost is shown apart. Scenario settings: Base &ndash; attrition x1.0, replacement 90%, growth x1.0; Hiring freeze &ndash; attrition x1.0, replacement 90%, growth x0.0, freeze from month 4; High attrition &ndash; attrition x1.3, replacement 90%, growth x1.0; Pay equity first &ndash; attrition x1.0, replacement 90%, growth x1.0, remediation from month 7.</p>
+<figure><div class="plate"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" role="img" aria-label="A hiring freeze ends the year with far fewer people"><style>
+  svg { --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781; --grid:#e1e0d9; --axis:#c3c2b7;
+        --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --base:#0b0b0b; --up:#e34948; --down:#2a78d6; }
+  @media (prefers-color-scheme: dark) {
+    svg { --surface:#1a1a19; --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a; --axis:#383835;
+          --s1:#3987e5; --s2:#d95926; --s3:#199e70; --base:#ffffff; --up:#e66767; --down:#3987e5; }
+  }
+  text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--ink2); font-size: 12px; }
+  .title { fill: var(--ink); font-size: 15px; font-weight: 600; }
+  .muted { fill: var(--muted); font-size: 11px; }
+  .val { fill: var(--ink); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface);
+         stroke-width: 4px; stroke-linejoin: round; }
+</style><rect width="720" height="360" rx="8" fill="var(--surface)"/><text x="24" y="34" class="title">A hiring freeze ends the year with far fewer people</text><text x="24" y="54">Month-end FTE, both entities: FY2026 actual, then FY2027 by scenario</text><rect x="60" y="66" width="18" height="3" fill="var(--base)"/><text x="84" y="71">FY2026 actual</text><rect x="187" y="66" width="18" height="3" fill="var(--s1)"/><text x="211" y="71">Base</text><rect x="251" y="66" width="18" height="3" fill="var(--s2)"/><text x="275" y="71">Hiring freeze</text><rect x="378" y="66" width="18" height="3" fill="var(--s3)"/><text x="402" y="71">High attrition</text><line x1="60" x2="570" y1="320.0" y2="320.0" stroke="var(--grid)"/><text x="52" y="324.0" text-anchor="end" class="muted">1,800</text><line x1="60" x2="570" y1="274.4" y2="274.4" stroke="var(--grid)"/><text x="52" y="278.4" text-anchor="end" class="muted">1,900</text><line x1="60" x2="570" y1="228.8" y2="228.8" stroke="var(--grid)"/><text x="52" y="232.8" text-anchor="end" class="muted">2,000</text><line x1="60" x2="570" y1="183.2" y2="183.2" stroke="var(--grid)"/><text x="52" y="187.2" text-anchor="end" class="muted">2,100</text><line x1="60" x2="570" y1="137.6" y2="137.6" stroke="var(--grid)"/><text x="52" y="141.6" text-anchor="end" class="muted">2,200</text><line x1="60" x2="570" y1="92.0" y2="92.0" stroke="var(--grid)"/><text x="52" y="96.0" text-anchor="end" class="muted">2,300</text><text x="60.0" y="344" text-anchor="middle" class="muted">Jul 25</text><text x="126.5" y="344" text-anchor="middle" class="muted">Oct 25</text><text x="193.0" y="344" text-anchor="middle" class="muted">Jan 26</text><text x="259.6" y="344" text-anchor="middle" class="muted">Apr 26</text><text x="326.1" y="344" text-anchor="middle" class="muted">Jul 26</text><text x="392.6" y="344" text-anchor="middle" class="muted">Oct 26</text><text x="459.1" y="344" text-anchor="middle" class="muted">Jan 27</text><text x="525.7" y="344" text-anchor="middle" class="muted">Apr 27</text><text x="570.0" y="344" text-anchor="middle" class="muted">Jun 27</text><line x1="303.9" x2="303.9" y1="86" y2="320" stroke="var(--axis)"/><path d="M60.0,219.2 L82.2,213.8 L104.3,209.1 L126.5,193.5 L148.7,180.4 L170.9,163.9 L193.0,155.6 L215.2,146.5 L237.4,134.7 L259.6,135.0 L281.7,144.0 L303.9,150.5" fill="none" stroke="var(--base)" stroke-width="2"/><path d="M303.9,150.5 L326.1,150.4 L348.3,150.4 L370.4,150.4 L392.6,150.4 L414.8,150.3 L437.0,150.3 L459.1,150.3 L481.3,150.3 L503.5,150.2 L525.7,150.2 L547.8,150.2 L570.0,150.2" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/><circle cx="326.1" cy="150.4" r="7" fill="transparent"><title>Base, Jul 26: 2,172 FTE</title></circle><circle cx="348.3" cy="150.4" r="7" fill="transparent"><title>Base, Aug 26: 2,172 FTE</title></circle><circle cx="370.4" cy="150.4" r="7" fill="transparent"><title>Base, Sep 26: 2,172 FTE</title></circle><circle cx="392.6" cy="150.4" r="7" fill="transparent"><title>Base, Oct 26: 2,172 FTE</title></circle><circle cx="414.8" cy="150.3" r="7" fill="transparent"><title>Base, Nov 26: 2,172 FTE</title></circle><circle cx="437.0" cy="150.3" r="7" fill="transparent"><title>Base, Dec 26: 2,172 FTE</title></circle><circle cx="459.1" cy="150.3" r="7" fill="transparent"><title>Base, Jan 27: 2,172 FTE</title></circle><circle cx="481.3" cy="150.3" r="7" fill="transparent"><title>Base, Feb 27: 2,172 FTE</title></circle><circle cx="503.5" cy="150.2" r="7" fill="transparent"><title>Base, Mar 27: 2,172 FTE</title></circle><circle cx="525.7" cy="150.2" r="7" fill="transparent"><title>Base, Apr 27: 2,172 FTE</title></circle><circle cx="547.8" cy="150.2" r="7" fill="transparent"><title>Base, May 27: 2,172 FTE</title></circle><circle cx="570.0" cy="150.2" r="7" fill="transparent"><title>Base, Jun 27: 2,172 FTE</title></circle><path d="M303.9,150.5 L326.1,151.9 L348.3,153.3 L370.4,154.7 L392.6,169.1 L414.8,183.3 L437.0,197.3 L459.1,211.1 L481.3,224.6 L503.5,238.0 L525.7,251.1 L547.8,264.0 L570.0,276.8" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/><circle cx="326.1" cy="151.9" r="7" fill="transparent"><title>Hiring freeze, Jul 26: 2,169 FTE</title></circle><circle cx="348.3" cy="153.3" r="7" fill="transparent"><title>Hiring freeze, Aug 26: 2,165 FTE</title></circle><circle cx="370.4" cy="154.7" r="7" fill="transparent"><title>Hiring freeze, Sep 26: 2,162 FTE</title></circle><circle cx="392.6" cy="169.1" r="7" fill="transparent"><title>Hiring freeze, Oct 26: 2,131 FTE</title></circle><circle cx="414.8" cy="183.3" r="7" fill="transparent"><title>Hiring freeze, Nov 26: 2,100 FTE</title></circle><circle cx="437.0" cy="197.3" r="7" fill="transparent"><title>Hiring freeze, Dec 26: 2,069 FTE</title></circle><circle cx="459.1" cy="211.1" r="7" fill="transparent"><title>Hiring freeze, Jan 27: 2,039 FTE</title></circle><circle cx="481.3" cy="224.6" r="7" fill="transparent"><title>Hiring freeze, Feb 27: 2,009 FTE</title></circle><circle cx="503.5" cy="238.0" r="7" fill="transparent"><title>Hiring freeze, Mar 27: 1,980 FTE</title></circle><circle cx="525.7" cy="251.1" r="7" fill="transparent"><title>Hiring freeze, Apr 27: 1,951 FTE</title></circle><circle cx="547.8" cy="264.0" r="7" fill="transparent"><title>Hiring freeze, May 27: 1,923 FTE</title></circle><circle cx="570.0" cy="276.8" r="7" fill="transparent"><title>Hiring freeze, Jun 27: 1,895 FTE</title></circle><path d="M303.9,150.5 L326.1,150.9 L348.3,151.3 L370.4,151.7 L392.6,152.1 L414.8,152.4 L437.0,152.8 L459.1,153.2 L481.3,153.6 L503.5,154.0 L525.7,154.4 L547.8,154.8 L570.0,155.2" fill="none" stroke="var(--s3)" stroke-width="2" stroke-linejoin="round"/><circle cx="326.1" cy="150.9" r="7" fill="transparent"><title>High attrition, Jul 26: 2,171 FTE</title></circle><circle cx="348.3" cy="151.3" r="7" fill="transparent"><title>High attrition, Aug 26: 2,170 FTE</title></circle><circle cx="370.4" cy="151.7" r="7" fill="transparent"><title>High attrition, Sep 26: 2,169 FTE</title></circle><circle cx="392.6" cy="152.1" r="7" fill="transparent"><title>High attrition, Oct 26: 2,168 FTE</title></circle><circle cx="414.8" cy="152.4" r="7" fill="transparent"><title>High attrition, Nov 26: 2,167 FTE</title></circle><circle cx="437.0" cy="152.8" r="7" fill="transparent"><title>High attrition, Dec 26: 2,167 FTE</title></circle><circle cx="459.1" cy="153.2" r="7" fill="transparent"><title>High attrition, Jan 27: 2,166 FTE</title></circle><circle cx="481.3" cy="153.6" r="7" fill="transparent"><title>High attrition, Feb 27: 2,165 FTE</title></circle><circle cx="503.5" cy="154.0" r="7" fill="transparent"><title>High attrition, Mar 27: 2,164 FTE</title></circle><circle cx="525.7" cy="154.4" r="7" fill="transparent"><title>High attrition, Apr 27: 2,163 FTE</title></circle><circle cx="547.8" cy="154.8" r="7" fill="transparent"><title>High attrition, May 27: 2,162 FTE</title></circle><circle cx="570.0" cy="155.2" r="7" fill="transparent"><title>High attrition, Jun 27: 2,161 FTE</title></circle><circle cx="570.0" cy="150.2" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"/><text x="580.0" y="154.2" class="val">2,172</text><circle cx="570.0" cy="155.2" r="4" fill="var(--s3)" stroke="var(--surface)" stroke-width="2"/><text x="580.0" y="169.2" class="val">2,161</text><circle cx="570.0" cy="276.8" r="4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/><text x="580.0" y="280.8" class="val">1,895</text></svg>
+</div><figcaption>FTE paths</figcaption></figure>
+<p>FY2026 attrition was 16.9% in Italy and 18.2% in Poland. The forecast backfills 90% of leavers after 2 months, so each extra point of attrition adds about €62k of recruitment cost at the assumed cost per hire.</p>
+<h2><span class="num">04</span><span>Recommendations</span></h2>
+<ol><li><strong>Set the FY2027 budget at the base case plus pay-equity remediation, €111.7M.</strong> The first pay-transparency reports cover 2026 pay and are due in June 2027; gaps that are neither justified nor closed within six months lead to a joint pay assessment.</li><li><strong>Control headcount by position, month by month.</strong> The FY2026 overrun was volume, and actual FTE was already more than 2% above plan by August 2025.</li><li><strong>Treat a hiring freeze as an operating decision.</strong> It saves money only by ending the year 278 FTE short.</li><li><strong>Price attrition in the budget.</strong> Recruitment cost rises with every leaver, even when payroll does not.</li><li><strong>Replace the illustrative rates with the payroll provider's:</strong> other INPS contributions and INAIL, the Polish accident rate, PPK participation, and cost per hire.</li></ol>
+<h2><span class="num">05</span><span>Method and limits</span></h2>
+<ul><li><strong>Two engines, one answer.</strong> Every figure is computed in pandas and again by live formulas in <a href="workforce_cost_model.xlsx">the workbook</a>; its Reconciliation sheet checks each pair, and CI recalculates the workbook with LibreOffice.</li><li><strong>Month-end population.</strong> FTE and cost are counted on the payroll at each month end, from hire and exit dates.</li><li><strong>Simplifications, stated.</strong> Salaries as at 30 June 2026 apply to every month; bonus is paid at target; TFR accrues on base pay; one cap and one exchange rate apply to the whole year; overtime, leave and benefits in kind are not modelled. Full list in <a href="https://github.com/D0M3N1C0X/workforce-cost-model/blob/main/docs/method.md">docs/method.md</a>.</li><li><strong>Not payroll or tax advice.</strong> Rates and caps carry their source and status in <a href="https://github.com/D0M3N1C0X/workforce-cost-model/blob/main/docs/verification.md">docs/verification.md</a>.</li></ul></article><footer class="colophon">Generated from <code>reports/cfo_memo.md</code> by <code>python3 src/run_all.py</code>. Synthetic data, fixed seed: no real person's pay. Not payroll or tax advice. Source: <a href="https://github.com/D0M3N1C0X/workforce-cost-model">workforce-cost-model</a>.</footer></div></body></html>
