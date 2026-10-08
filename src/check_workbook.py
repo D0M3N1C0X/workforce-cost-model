@@ -33,6 +33,21 @@ def check(values: dict, sheet_names: list[str], n_checks: int) -> int:
     return 0 if report.ok else 1
 
 
+def sample(per_cell: int, seed: int):
+    """A few stayers, leavers and joiners in every entity and department, so every formula has data."""
+    import model
+    r = model.roster()
+    parts = []
+    for (c, d), g in r.groupby(["country", "department"]):
+        stay = g[(g["hire_date"] <= model.OPENING) & (g["exit_date"].isna())]
+        left = g[g["exit_date"].notna()]
+        join = g[g["hire_date"] > model.OPENING]
+        for part in (stay, left, join):
+            parts.append(part.sample(n=min(len(part), per_cell), random_state=seed))
+    import pandas as pd
+    return pd.concat(parts).sort_values("employee_id")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("workbook", nargs="?", type=Path, help="a workbook already recalculated by LibreOffice or Excel")
