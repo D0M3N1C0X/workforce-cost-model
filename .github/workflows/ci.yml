@@ -27,7 +27,7 @@ jobs:
 
       - name: Text outputs are unchanged
         run: |
-          git diff --exit-code --stat -- reports \
+          git diff --exit-code --stat -- reports web tests/fixtures \
             || (echo "::error::Rebuilding changed a committed output - the pipeline is not deterministic" && exit 1)
 
       - name: The workbook has the same content
@@ -35,6 +35,9 @@ jobs:
 
       - name: Tests
         run: pytest -q
+
+      - name: The simulator gives the same results as the model
+        run: node tests/js/check_engine.mjs
 
   workbook:
     # The full model, recalculated by a real spreadsheet engine and checked against pandas.

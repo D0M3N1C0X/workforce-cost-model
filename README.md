@@ -17,7 +17,7 @@ director, and one reproducible pipeline that checks every figure twice.
 > each with its source and status in the [verification register](docs/verification.md). Not
 > payroll or tax advice.
 
-### ▶ [Read the memo online](https://d0m3n1c0x.github.io/workforce-cost-model/) · [Download the Excel model](https://github.com/D0M3N1C0X/workforce-cost-model/raw/main/deliverables/workforce_cost_model.xlsx)
+### ▶ [Try the scenario simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/) · [Read the memo online](https://d0m3n1c0x.github.io/workforce-cost-model/) · [Download the Excel model](https://github.com/D0M3N1C0X/workforce-cost-model/raw/main/deliverables/workforce_cost_model.xlsx)
 
 ---
 
@@ -38,6 +38,7 @@ director, and one reproducible pipeline that checks every figure twice.
 | Deliverable | For | What is in it |
 |---|---|---|
 | [`workforce_cost_model.xlsx`](deliverables/workforce_cost_model.xlsx) | the finance team | Fourteen sheets: dashboard with a scenario picker, scenario summary and bridge, FY2026 variance, actuals and budget, FY2027 drivers, one forecast sheet per scenario, the employee roster, settings and a reconciliation sheet. **Every figure is a live formula**: change a contribution rate, an attrition multiplier or a hiring-freeze month and the model recalculates. |
+| [Scenario simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/) | the HR business partner and finance, in the budget meeting | Levers for leavers, backfills, growth, a hiring freeze, the pay review and closing pay gaps; FY2027 month by month, the bridge and the sentence for the CFO; up to five scenarios side by side; an Excel download. Runs on the sample company or on a client's own staff list, and **the file never leaves the computer**. Also: what one employee costs in Italy, Poland, Germany and Spain, item by item. English and Italian. |
 | [`cfo_memo.md`](reports/cfo_memo.md) | the finance director | Answer first: where the FY2026 budget went, what an employee costs in each country, FY2027 under four scenarios, five recommendations, method and limits. |
 | [`docs/method.md`](docs/method.md) · [`docs/verification.md`](docs/verification.md) | reviewers | Every formula and simplification; the source and status of every rate and cap. |
 
@@ -45,8 +46,8 @@ director, and one reproducible pipeline that checks every figure twice.
 
 | HR and payroll | Finance and analytics | Delivery and engineering |
 |---|---|---|
-| Employer cost in two systems: INPS and TFR in Italy; ZUS, the annual 30-times cap, Labour Fund, FGŚP and PPK in Poland | Budget against actual with a volume, mix and rate variance that adds up exactly | A client-ready Excel model: inputs in blue, formulas in black, key assumptions in yellow, one Settings sheet, a scenario picker, no dynamic arrays |
-| Attrition, time to hire and replacement as forecast drivers | A month-by-month driver-based forecast under four scenarios, with a bridge from last year | **Two engines, one answer:** pandas and Excel formulas reconciled on 570 checks, recalculated in CI by LibreOffice |
+| Employer cost in four systems: INPS and TFR in Italy; ZUS, the annual 30-times cap, Labour Fund, FGŚP and PPK in Poland; German ceilings and levies; the Spanish maximum base and solidarity contribution | Budget against actual with a volume, mix and rate variance that adds up exactly | A client-ready Excel model: inputs in blue, formulas in black, key assumptions in yellow, one Settings sheet, a scenario picker, no dynamic arrays |
+| Attrition, time to hire and replacement as forecast drivers | A month-by-month driver-based forecast under four scenarios, with a bridge from last year | **Three engines, one answer:** pandas and Excel formulas reconciled on 570 checks, recalculated in CI by LibreOffice; the browser simulator checked against the model on 9,679 values |
 | Pay-equity remediation priced with employer on-costs | Recruitment cost kept apart from payroll, so attrition shows its real price | Deterministic outputs, tests for every identity, a verification register for every rate |
 
 ## How it fits together

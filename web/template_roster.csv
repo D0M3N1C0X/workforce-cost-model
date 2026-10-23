@@ -1,0 +1,4 @@
+employee_id,country,department,fte,base_salary,bonus
+E001,IT,Sales,1.0,42000,3000
+E002,DE,Tech,0.8,68000,0
+E003,ES,Finance,1.0,39000,1500

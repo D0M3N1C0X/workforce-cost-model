@@ -9,6 +9,7 @@ on:
       - deliverables/**
       - .github/workflows/pages.yml
       - site-assets/**
+      - web/**
   workflow_dispatch:
 
 permissions:
@@ -35,6 +36,9 @@ jobs:
           cp reports/index.html site/index.html
           cp -r reports/figures site/figures
           cp deliverables/workforce_cost_model.xlsx site/
+          # the scenario simulator; no visit counter on this page
+          mkdir -p site/simulator
+          cp -R web/* site/simulator/
 
       - name: Add the link preview
         run: |

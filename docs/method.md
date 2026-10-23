@@ -103,6 +103,11 @@ forecast, and the remainder, which is the lower cost per FTE of the June 2026 wo
 
 ## Two engines, one answer
 
+A third engine runs in the browser: the [scenario simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/)
+recomputes `forecast()` and `summary()` for any choice of levers, and what one employee costs in four countries
+(`src/employer_cost.py`). `tests/js/check_engine.mjs` compares it with the model on 9,679 values (twelve scenarios,
+68 pay levels around every ceiling, a client-like roster) in CI.
+
 - The pandas model and the workbook are built from the same `config.py`. The workbook holds no
   pasted results except the Python column of the Reconciliation sheet.
 - The Reconciliation sheet compares Python and formula values for every entity × department
@@ -129,6 +134,8 @@ Stated here so a reviewer can judge them; each one is where a real budget would 
   year, and contributions stop in the month the cap is reached. The model spreads them evenly,
   ignores that the fiscal year straddles two calendar years, and caps joiners and leavers on
   their annualised pay rather than on what they earned in the year.
+- **A client's staff in the simulator** start from today's run-rate (today's FTE at today's loaded cost, for a
+  year), with one leavers rate and one growth rate for everyone: a snapshot carries no history.
 - **One exchange rate** for the whole period. Cost in euro moves with the zloty; a finance team
   would budget at its own planning rate.
 - **Not modelled:** overtime, holiday accruals, benefits in kind, severance on exit, reduced

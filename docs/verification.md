@@ -1,7 +1,7 @@
 # Verification register
 
 Every rate, cap and rule the model relies on, where it comes from and how far it has been
-checked. Checked on **16 and 17 September 2026**. None of this is payroll or tax advice: a real
+checked. Checked on **16 and 17 September 2026**; Germany and Spain on **23 October 2026**. None of this is payroll or tax advice: a real
 budget takes its rates from the payroll provider.
 
 **Status key**
@@ -39,6 +39,32 @@ revaluation of the TFR fund (see [method](method.md#simplifications)).
 
 The model checks W11 on the Reconciliation sheet: no Polish full-time salary may fall below it.
 
+## Germany (2026) - simulator and calculator only
+
+The sample company has no German staff; these rules serve the employer-cost calculator and a client's own staff
+in the [simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/).
+
+| # | Rule used | Value | Source | Status |
+|---|---|---|---|---|
+| W22 | Contribution ceilings 2026: pension and unemployment; health and long-term care (Sozialversicherungsrechengrößen-Verordnung 2026, cabinet 8 October 2025, Bundesrat 21 November 2025) | €101,400 and €69,750 a year (€8,450 and €5,812.50 a month) | [Bundesregierung](https://www.bundesregierung.de/breg-de/aktuelles/beitragsbemessungsgrenzen-2386514); [Deutsche Rentenversicherung](https://www.deutsche-rentenversicherung.de/DRV/DE/Ueber-uns-und-Presse/Presse/Meldungen/2025/250910-sv-rechengroessen-vo-2026.html) | Primary |
+| W23 | Employer shares: pension 9.3% (of 18.6%), unemployment 1.3% (of 2.6%), health 7.3% (of 14.6%), long-term care 1.8% (of 3.6%; Saxony differs) | as stated | [Techniker Krankenkasse, rates 2026](https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554) | Primary (statutory insurer) |
+| W24 | Average additional health contribution 2026, set by the Ministry of Health; half is paid by the employer. Each insurer sets its own | 2.9% (employer 1.45%) | [Techniker Krankenkasse](https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554) | Primary; the employer's own insurer is illustrative |
+| W25 | Insolvency levy (U3) and maternity levy (U2), on pay up to the pension ceiling. U2 varies by insurer; U1 applies only to employers with up to 30 staff and is left out | 0.15% and 0.44% | [Techniker Krankenkasse](https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554) | U3 primary; U2 illustrative |
+| W26 | Accident insurance (Berufsgenossenschaft): average contribution of the trade associations in 2025, per €100 of payroll. The real rate depends on the sector's risk class | 1.08% | [DGUV, figures for 2025](https://dguv.de/de/mediencenter/pm/zahlen-2025.jsp) | Illustrative |
+
+## Spain (2026) - simulator and calculator only
+
+| # | Rule used | Value | Source | Status |
+|---|---|---|---|---|
+| W27 | Employer shares, Régimen General: common contingencies 23.60%; intergenerational equity mechanism (MEI) 0.75% (art. 4 and 16) | as stated | [Orden PJC/297/2026, BOE 31 March 2026](https://www.boe.es/buscar/act.php?id=BOE-A-2026-7296) | Primary |
+| W28 | Unemployment 5.50% (open-ended contract; 6.70% fixed-term), FOGASA 0.20%, vocational training 0.60%, on the same base as accidents (art. 33) | as stated | [Orden PJC/297/2026](https://www.boe.es/buscar/act.php?id=BOE-A-2026-7296) | Primary |
+| W29 | Maximum contribution base | €5,101.20 a month | [Orden PJC/297/2026](https://www.boe.es/buscar/act.php?id=BOE-A-2026-7296), art. 2 and 3 | Primary |
+| W30 | Solidarity contribution on pay above the maximum base, employer share by band: up to 10% above it 0.96%, from 10% to 50% above 1.04%, beyond 1.22% (art. 17.1) | as stated | [Orden PJC/297/2026](https://www.boe.es/buscar/act.php?id=BOE-A-2026-7296) | Primary |
+| W31 | Accident and occupational disease premium (AT/EP) for office work (Cuadro II, letter a): 1.50% since 2019. Other jobs follow the activity's tariff | 1.50% | [Cuatrecasas](https://www.cuatrecasas.com/es/spain/laboral-1/art/que-trabajos-son-exclusivos-de-oficina-a-los-efectos-de-la-cotizacion-empresarial-por-accidentes-de-trabajo); [Andersen](https://es.andersen.com/criterio-preponderante-de-adecuacion-al-riesgo-existente-en-la-ocupacion-concreta-en-materia-de-cotizacion-por-accidentes-de-trabajo-y-enfermedad-profesional/) | Sources agree; illustrative for other jobs |
+
+Annual pay is set against annual ceilings (twelve times the monthly ones), which is exact when pay is spread evenly;
+Spanish minimum bases by professional group and the extra payments' prorating are not modelled.
+
 ## Pay transparency
 
 | # | Rule used in the model | Source | Status |
@@ -60,3 +86,4 @@ sheet, and marked there in yellow where they move the result most.
 | W19 | Pay review from January 2027 | 2.5% Italy, 5.0% Poland | Illustrative |
 | W20 | Share of leavers replaced, and months until the backfill starts | 90%, 2 months | Illustrative |
 | W21 | External recruitment and onboarding cost per hire | €4,000 Italy, €2,500 Poland | Illustrative |
+| W32 | Starting values offered for a client's own staff in the simulator: leavers 12% a year, growth 2%, pay review 3% in Germany and Spain, cost per hire €5,000 in Germany and €3,000 in Spain | as stated | Illustrative, editable on the page |

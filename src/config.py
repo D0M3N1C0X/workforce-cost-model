@@ -44,6 +44,30 @@ PL_CAP_PLN = 282_600     # 2026 annual limit for pension and disability contribu
 EUR_PLN = 4.2568         # ECB euro reference rate, monthly average June 2026
 PL_MIN_WAGE_PLN = 4_806  # monthly minimum wage 2026 (Council of Ministers regulation, 11 Sept 2025)
 
+# Germany (2026): employer shares. Used by the employer-cost calculator and the scenario simulator for a
+# client's own staff; the sample company stays Italian and Polish.
+DE_PENSION = 0.093       # Rentenversicherung, half of 18.6%, capped at DE_CAP_PENSION
+DE_UNEMPLOYMENT = 0.013  # Arbeitslosenversicherung, half of 2.6%, capped at DE_CAP_PENSION
+DE_HEALTH = 0.073        # Krankenversicherung, half of 14.6%, capped at DE_CAP_HEALTH
+DE_HEALTH_EXTRA = 0.0145  # half of the 2.9% average additional contribution; each insurer sets its own
+DE_CARE = 0.018          # Pflegeversicherung, half of 3.6% (Saxony differs), capped at DE_CAP_HEALTH
+DE_INSOLVENCY = 0.0015   # Insolvenzgeldumlage (U3), on pay up to DE_CAP_PENSION
+DE_U2 = 0.0044           # maternity levy (U2): varies by insurer - illustrative, on pay up to DE_CAP_PENSION
+DE_ACCIDENT = 0.0108     # Berufsgenossenschaft: 2025 average of the trade associations - illustrative
+DE_CAP_PENSION = 101_400  # annual contribution ceiling, pension and unemployment (8,450 a month)
+DE_CAP_HEALTH = 69_750    # annual contribution ceiling, health and long-term care (5,812.50 a month)
+
+# Spain (2026, Orden PJC/297/2026): employer shares, Régimen General, open-ended contract.
+ES_COMMON = 0.2360       # contingencias comunes
+ES_MEI = 0.0075          # mecanismo de equidad intergeneracional
+ES_UNEMPLOYMENT = 0.0550  # desempleo, contrato indefinido (6.70% for fixed-term)
+ES_FOGASA = 0.0020       # Fondo de Garantía Salarial
+ES_TRAINING = 0.0060     # formación profesional
+ES_ACCIDENT = 0.0150     # AT/EP: tarifa for office work (Cuadro II, letra a) - illustrative for other jobs
+ES_CAP = 5_101.20 * 12   # base máxima, 5,101.20 a month
+# Solidarity contribution on pay above the base máxima (art. 17.1): employer rate per monthly band.
+ES_SOLIDARITY = [(5_101.20 * 12, 0.0096), (5_611.32 * 12, 0.0104), (7_651.80 * 12, 0.0122)]
+
 # Annual target bonus by level, paid at target (same rule as pay-transparency-readiness-kit).
 BONUS_TARGET = {"L1": 0.0, "L2": 0.0, "L3": 0.05, "L4": 0.08, "L5": 0.12, "L6": 0.20}
 
@@ -59,6 +83,11 @@ MERIT_MONTH = 7                      # month 7 of FY2027 = January 2027
 TIME_TO_HIRE = 2                     # months between a leaver and the backfill starting (at least 1)
 # External recruitment and onboarding cost per hire - illustrative, set from the company's own data.
 COST_PER_HIRE = {"IT": 4000, "PL": 2500}
+
+# Starting values the simulator offers for a client's own staff, all editable on the page - illustrative.
+CLIENT_DEFAULTS = {"attrition": 0.12, "growth": 0.02,
+                   "merit": {"IT": 0.025, "PL": 0.050, "DE": 0.030, "ES": 0.030},
+                   "cost_per_hire": {"IT": 4000, "PL": 2500, "DE": 5000, "ES": 3000}}
 
 # Pay-equity remediation: the upper-bound annual cost of closing flagged category gaps,
 # from pay-transparency-readiness-kit (tableau/categories.csv at commit 95cdf8e).

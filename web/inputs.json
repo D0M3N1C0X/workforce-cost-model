@@ -1,0 +1,284 @@
+{
+ "cfg": {
+  "rules": {
+   "DE_ACCIDENT": 0.0108,
+   "DE_CAP_HEALTH": 69750,
+   "DE_CAP_PENSION": 101400,
+   "DE_CARE": 0.018,
+   "DE_HEALTH": 0.073,
+   "DE_HEALTH_EXTRA": 0.0145,
+   "DE_INSOLVENCY": 0.0015,
+   "DE_PENSION": 0.093,
+   "DE_U2": 0.0044,
+   "DE_UNEMPLOYMENT": 0.013,
+   "ES_ACCIDENT": 0.015,
+   "ES_CAP": 61214.399999999994,
+   "ES_COMMON": 0.236,
+   "ES_FOGASA": 0.002,
+   "ES_MEI": 0.0075,
+   "ES_SOLIDARITY": [
+    [
+     61214.399999999994,
+     0.0096
+    ],
+    [
+     67335.84,
+     0.0104
+    ],
+    [
+     91821.6,
+     0.0122
+    ]
+   ],
+   "ES_TRAINING": 0.006,
+   "ES_UNEMPLOYMENT": 0.055,
+   "EUR_PLN": 4.2568,
+   "IT_IVS": 0.2381,
+   "IT_OTHER": 0.06,
+   "PL_ACCIDENT": 0.0167,
+   "PL_CAP_PLN": 282600,
+   "PL_DISABILITY": 0.065,
+   "PL_FGSP": 0.001,
+   "PL_LABOUR_FUND": 0.0245,
+   "PL_MIN_WAGE_PLN": 4806,
+   "PL_PENSION": 0.0976,
+   "PL_PPK": 0.015,
+   "PPK_PARTICIPATION": 0.5,
+   "TFR_DIVISOR": 13.5
+  },
+  "countries": [
+   "IT",
+   "PL",
+   "DE",
+   "ES"
+  ],
+  "entities": {
+   "IT": "IT · Milan",
+   "PL": "PL · Kraków"
+  },
+  "months": 12,
+  "fy2027_start": "2026-07-01",
+  "merit": {
+   "IT": 0.025,
+   "PL": 0.05
+  },
+  "merit_month": 7,
+  "time_to_hire": 2,
+  "cost_per_hire": {
+   "IT": 4000,
+   "PL": 2500
+  },
+  "loaded_factor": {
+   "IT": 1.3721740740740742,
+   "PL": 1.2122999999999997,
+   "DE": 1.2282,
+   "ES": 1.3215
+  },
+  "scenarios": [
+   {
+    "name": "Base",
+    "attrition_x": 1.0,
+    "replacement": 0.9,
+    "growth_x": 1.0,
+    "freeze_from": 0,
+    "remediation_from": 0
+   },
+   {
+    "name": "Hiring freeze",
+    "attrition_x": 1.0,
+    "replacement": 0.9,
+    "growth_x": 0.0,
+    "freeze_from": 4,
+    "remediation_from": 0
+   },
+   {
+    "name": "High attrition",
+    "attrition_x": 1.3,
+    "replacement": 0.9,
+    "growth_x": 1.0,
+    "freeze_from": 0,
+    "remediation_from": 0
+   },
+   {
+    "name": "Pay equity first",
+    "attrition_x": 1.0,
+    "replacement": 0.9,
+    "growth_x": 1.0,
+    "freeze_from": 0,
+    "remediation_from": 7
+   }
+  ],
+  "bonus_target": {
+   "L1": 0.0,
+   "L2": 0.0,
+   "L3": 0.05,
+   "L4": 0.08,
+   "L5": 0.12,
+   "L6": 0.2
+  },
+  "client": {
+   "attrition": 0.12,
+   "growth": 0.02,
+   "merit": {
+    "IT": 0.025,
+    "PL": 0.05,
+    "DE": 0.03,
+    "ES": 0.03
+   },
+   "cost_per_hire": {
+    "IT": 4000,
+    "PL": 2500,
+    "DE": 5000,
+    "ES": 3000
+   }
+  }
+ },
+ "sample": {
+  "cells": [
+   {
+    "country": "IT",
+    "department": "Customer Service",
+    "fte": 306.0,
+    "rate": 52339.30542457154,
+    "attrition": 0.21026118381426925,
+    "growth": 0.02
+   },
+   {
+    "country": "IT",
+    "department": "Operations",
+    "fte": 254.79999999999998,
+    "rate": 57429.54346930781,
+    "attrition": 0.13687283590196211,
+    "growth": 0.0
+   },
+   {
+    "country": "IT",
+    "department": "Tech",
+    "fte": 173.8,
+    "rate": 72985.65583320546,
+    "attrition": 0.14398157035899406,
+    "growth": 0.05
+   },
+   {
+    "country": "IT",
+    "department": "Sales",
+    "fte": 121.8,
+    "rate": 58596.55366886516,
+    "attrition": 0.17535478431923565,
+    "growth": 0.03
+   },
+   {
+    "country": "IT",
+    "department": "Finance",
+    "fte": 103.80000000000001,
+    "rate": 64959.057761582095,
+    "attrition": 0.14677685950413225,
+    "growth": 0.0
+   },
+   {
+    "country": "IT",
+    "department": "HR",
+    "fte": 75.0,
+    "rate": 56782.9509512,
+    "attrition": 0.18520199727644124,
+    "growth": 0.0
+   },
+   {
+    "country": "PL",
+    "department": "Customer Service",
+    "fte": 321.40000000000003,
+    "rate": 37653.587247950374,
+    "attrition": 0.2405813533989589,
+    "growth": 0.02
+   },
+   {
+    "country": "PL",
+    "department": "Operations",
+    "fte": 290.20000000000005,
+    "rate": 38938.74994175052,
+    "attrition": 0.13501413760603204,
+    "growth": 0.0
+   },
+   {
+    "country": "PL",
+    "department": "Tech",
+    "fte": 191.2,
+    "rate": 53439.98218442144,
+    "attrition": 0.16121560270545723,
+    "growth": 0.05
+   },
+   {
+    "country": "PL",
+    "department": "Sales",
+    "fte": 143.6,
+    "rate": 40269.51742730241,
+    "attrition": 0.17804992934526612,
+    "growth": 0.03
+   },
+   {
+    "country": "PL",
+    "department": "Finance",
+    "fte": 103.0,
+    "rate": 45727.425648887154,
+    "attrition": 0.20837390457643623,
+    "growth": 0.0
+   },
+   {
+    "country": "PL",
+    "department": "HR",
+    "fte": 87.2,
+    "rate": 38016.85197543864,
+    "attrition": 0.13577453198930256,
+    "growth": 0.0
+   }
+  ],
+  "baseline": {
+   "IT": {
+    "fte": 1016.3833333333336,
+    "cost": 60786325.81268358
+   },
+   "PL": {
+    "fte": 1111.45,
+    "cost": 46324040.199017294
+   }
+  },
+  "remediation": {
+   "IT": 512476.52,
+   "PL": 674086.32
+  },
+  "summary": [
+   {
+    "scenario": "Base",
+    "country": "IT",
+    "fy26_fte": 1016.3833333333336,
+    "fy26_cost": 60786325.81268358,
+    "fy27_fte": 1035.7267642120794,
+    "closing_fte": 1036.1686080481345,
+    "fy27_payroll": 62319604.76158492,
+    "fy27_remediation": 0.0,
+    "fy27_cost": 62319604.76158492,
+    "fy27_hires": 175.7514512420699,
+    "fy27_hiring_cost": 703005.8049682797,
+    "bridge_volume": 1156862.8224887936,
+    "bridge_rate": 376416.12641254923,
+    "bridge_remediation": 0.0
+   },
+   {
+    "scenario": "Base",
+    "country": "PL",
+    "fy26_fte": 1111.45,
+    "fy26_cost": 46324040.199017294,
+    "fy27_fte": 1136.431727984612,
+    "closing_fte": 1136.2918920646177,
+    "fy27_payroll": 48652562.525389716,
+    "fy27_remediation": 0.0,
+    "fy27_cost": 48652562.525389716,
+    "fy27_hires": 205.84925359029768,
+    "fy27_hiring_cost": 514623.13397574413,
+    "bridge_volume": 1041211.5447389283,
+    "bridge_rate": 1287310.781633495,
+    "bridge_remediation": 0.0
+   }
+  ]
+ }
+}

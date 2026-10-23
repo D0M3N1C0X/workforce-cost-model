@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>People cost simulator</title>
+<meta name="description" content="FY2027 people cost under your own scenarios, and what one employee costs in Italy, Poland, Germany and Spain. Runs in the browser: files never leave the computer.">
+<link rel="stylesheet" href="design/strumenti.css">
+<style>
+  :root { --s1: #0066cc; --s2: #af52de; --s3: #c93400; --s4: #248a3d; --s5: #d70015; }
+  @media (prefers-color-scheme: dark) { :root { --s1: #4da3ff; --s2: #da8fff; --s3: #ff9f0a; --s4: #30d158; --s5: #ff6961; } }
+  .print-only { display: none; }
+  #passo-colonne, #riepilogo-colonne, #dati-cliente, #vista-costo { display: none; }
+  .s-drop .file { font-weight: 600; color: var(--good); }
+  .seg { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--line-soft); border-radius: 14px; padding: 4px; margin: 0 0 20px; }
+  .seg button { font: 600 15px var(--font); border: 0; background: transparent; color: var(--ink-2); min-height: 40px;
+    padding: 0 16px; border-radius: 10px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .leve { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px 24px; margin-top: 8px; }
+  .leva label { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .leva output { font-variant-numeric: tabular-nums; color: var(--accent); }
+  .leva small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .leva input[type=range] { width: 100%; min-height: 32px; accent-color: var(--accent); }
+  .leva select, .leva input[type=number], .leva input[type=text] { width: 100%; min-height: 44px; font: 400 16px var(--font); color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 6px 10px; }
+  .per-paese { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+  .per-paese span { font-size: 13px; color: var(--muted); display: block; }
+  .preset { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .frase { font: 500 20px/1.45 var(--font-display); margin: 0 0 18px; max-width: 46em; }
+  .chart { width: 100%; height: auto; display: block; margin: 8px 0 4px; font-family: var(--font); }
+  .chart text { fill: var(--ink-2); font-size: 12px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 14px; color: var(--ink-2); margin: 4px 0 8px; }
+  .legend i { display: inline-block; width: 14px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: 3px; }
+  .note { color: var(--muted); font-size: 13px; }
+  td .s-btn.is-small { min-height: 32px; padding: 4px 10px; font-size: 13px; }
+  .tot td { font-weight: 700; border-top: 1px solid var(--line); }
+  @media print { .print-only { display: block; margin-bottom: 16px; } .seg, .preset, #passo-dati, .no-print { display: none !important; } }
+</style>
+</head>
+<body>
+<div class="s-page">
+  <div class="s-top">
+    <a class="s-brand" href="../" data-i18n="brand">Workforce Cost Model</a>
+    <div class="s-lang" data-lang-switch role="group" aria-label="Language · Lingua">
+      <button type="button" data-lang="en">EN</button><button type="button" data-lang="it">IT</button>
+    </div>
+  </div>
+
+  <header class="s-hero">
+    <p class="s-eyebrow" data-i18n="eyebrow">People budget · FY2027</p>
+    <h1 data-i18n="title">What will next year's people cost be?</h1>
+    <p data-i18n="lead">Move the levers - leavers, backfills, growth, a hiring freeze, the pay review, closing pay gaps - and see FY2027 cost, month by month, with the sentence for the CFO. On the sample company or on your own staff.</p>
+  </header>
+
+  <div class="s-privacy" role="note">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+    <span data-i18n="privacy">Your staff file stays on this computer: the calculations run in this page and nothing is sent anywhere. You can check by going offline once the page has loaded.</span>
+  </div>
+
+  <div class="seg" id="viste" role="group" data-i18n-attr="aria-label:vistaLabel">
+    <button type="button" data-v="scenari" aria-pressed="true" data-i18n="vScenari">Scenarios for FY2027</button>
+    <button type="button" data-v="costo" aria-pressed="false" data-i18n="vCosto">What one employee costs</button>
+  </div>
+
+  <div id="vista-scenari">
+    <section class="s-card" id="passo-dati" aria-labelledby="h-dati">
+      <h2 id="h-dati"><span class="s-step">1</span><span data-i18n="step1">Whose staff</span></h2>
+      <p class="s-sub" id="dati-sub"></p>
+      <div class="s-drops">
+        <label class="s-drop" id="drop-organico">
+          <input type="file" id="file-organico" accept=".xlsx,.csv,text/csv">
+          <strong data-i18n="dropOrganico">Your staff list</strong>
+          <span data-i18n="dropOrganicoSub">Optional · one row per employee: country, department, FTE, annual salary, bonus</span>
+          <span class="file" id="nome-organico"></span>
+        </label>
+      </div>
+      <div class="s-actions">
+        <button type="button" class="s-btn" id="torna-esempio" data-i18n="tornaEsempio">Use the sample company</button>
+        <span class="s-why"><span data-i18n="modello">Template:</span> <a href="template_roster.csv" download data-i18n="modelloLink">staff list</a></span>
+      </div>
+      <div class="s-msg is-error" id="errore" role="alert"></div>
+      <div id="passo-colonne">
+        <p class="s-sub" id="colonne-sub" style="margin-top:18px"></p>
+        <div id="riepilogo-colonne"><span class="s-pill is-ok" id="colonne-ok"></span>
+          <button type="button" class="s-btn is-small" id="mostra-colonne" data-i18n="modifica">Change</button></div>
+        <div class="s-map" id="mappa"></div>
+      </div>
+      <div id="dati-cliente" class="leve">
+        <div class="leva"><label for="c-uscite"><span data-i18n="cUscite">Leavers a year, today</span><output id="o-c-uscite"></output></label>
+          <input type="range" id="c-uscite" min="0" max="0.4" step="0.01"><small data-i18n="cUsciteSub">Share of FTE who leave in a normal year.</small></div>
+        <div class="leva"><label for="c-crescita"><span data-i18n="cCrescita">Planned growth a year</span><output id="o-c-crescita"></output></label>
+          <input type="range" id="c-crescita" min="-0.1" max="0.2" step="0.005"><small data-i18n="cCrescitaSub">New FTE on top of backfills, as a share of today's FTE.</small></div>
+      </div>
+    </section>
+
+    <section class="s-card" aria-labelledby="h-leve">
+      <h2 id="h-leve"><span class="s-step">2</span><span data-i18n="step2">The scenario</span></h2>
+      <div class="preset" id="preset"></div>
+      <div class="leve">
+        <div class="leva"><label for="nome"><span data-i18n="nome">Name</span></label><input type="text" id="nome" maxlength="40"></div>
+        <div class="leva"><label for="l-uscite"><span data-i18n="lUscite">Leavers</span><output id="o-l-uscite"></output></label>
+          <input type="range" id="l-uscite" min="0" max="2" step="0.05"><small data-i18n="lUsciteSub">× today's rate: 1.3 means 30% more people leave.</small></div>
+        <div class="leva"><label for="l-sostituzioni"><span data-i18n="lSostituzioni">Leavers replaced</span><output id="o-l-sostituzioni"></output></label>
+          <input type="range" id="l-sostituzioni" min="0" max="1" step="0.05"><small data-i18n="lSostituzioniSub">Share of leavers backfilled, after the time to hire.</small></div>
+        <div class="leva"><label for="l-crescita"><span data-i18n="lCrescita">Growth</span><output id="o-l-crescita"></output></label>
+          <input type="range" id="l-crescita" min="0" max="2" step="0.05"><small data-i18n="lCrescitaSub">× the growth plan: 0 means no new roles.</small></div>
+        <div class="leva"><label for="l-blocco" data-i18n="lBlocco">Hiring freeze from</label><select id="l-blocco"></select>
+          <small data-i18n="lBloccoSub">No hires at all, not even backfills, from this month.</small></div>
+        <div class="leva"><label for="l-tth"><span data-i18n="lTth">Time to hire</span><output id="o-l-tth"></output></label>
+          <input type="range" id="l-tth" min="1" max="6" step="1"><small data-i18n="lTthSub">Months between a leaver and the backfill starting.</small></div>
+        <div class="leva"><label for="l-mese-merito" data-i18n="lMeseMerito">Pay review from</label><select id="l-mese-merito"></select>
+          <div class="per-paese" id="meriti" style="margin-top:8px"></div></div>
+        <div class="leva"><label for="l-equita" data-i18n="lEquita">Close pay gaps from</label><select id="l-equita"></select>
+          <div class="per-paese" id="equita" style="margin-top:8px"></div>
+          <small data-i18n="lEquitaSub">Annual pay to add per country, before employer on-costs: the cost ceiling from the pay transparency tool.</small></div>
+      </div>
+      <div class="s-actions"><button type="button" class="s-btn is-primary" id="salva" data-i18n="salva">Save this scenario to compare</button></div>
+    </section>
+
+    <section aria-live="polite" id="risultati">
+      <div class="print-only"><h2 data-i18n="stampaTitolo">FY2027 people cost</h2><p id="stampa-meta"></p></div>
+      <div class="s-kpis" id="kpis"></div>
+      <section class="s-card" aria-labelledby="h-frase">
+        <h2 id="h-frase" data-i18n="perCfo">For the CFO</h2>
+        <p class="frase" id="frase"></p>
+        <div class="s-table-wrap"><table class="s-table" id="ponte"></table></div>
+      </section>
+      <section class="s-card" aria-labelledby="h-mesi">
+        <h2 id="h-mesi" data-i18n="mesi">Month by month</h2>
+        <div class="seg" id="metrica" role="group" style="margin-bottom:8px">
+          <button type="button" data-m="cost" aria-pressed="true" data-i18n="mCosto">Cost</button>
+          <button type="button" data-m="fte" aria-pressed="false" data-i18n="mFte">FTE</button>
+        </div>
+        <div class="legend" id="legenda"></div>
+        <div id="grafico"></div>
+      </section>
+      <section class="s-card" aria-labelledby="h-confronto">
+        <h2 id="h-confronto" data-i18n="confronto">Scenarios side by side</h2>
+        <p class="s-sub" id="confronto-sub"></p>
+        <div class="s-filters no-print">
+          <button type="button" class="s-btn is-small" id="scarica-xlsx" data-i18n="scaricaXlsx">Download in Excel</button>
+          <button type="button" class="s-btn is-small" id="stampa" data-i18n="stampa">Print for the budget meeting</button>
+        </div>
+        <div class="s-table-wrap"><table class="s-table" id="tab-confronto"></table></div>
+      </section>
+    </section>
+  </div>
+
+  <div id="vista-costo">
+    <section class="s-card" aria-labelledby="h-costo">
+      <h2 id="h-costo" data-i18n="costoTitolo">What one employee costs the employer</h2>
+      <p class="s-sub" data-i18n="costoSub">The same pay in four countries: gross pay plus every employer contribution, for a year of 2026.</p>
+      <div class="s-fields">
+        <div class="s-field"><label for="k-ral" data-i18n="kcRal">Annual base salary, full time</label><input type="number" id="k-ral" min="0" step="500" value="45000"></div>
+        <div class="s-field"><label for="k-bonus" data-i18n="kcBonus">Annual bonus</label><input type="number" id="k-bonus" min="0" step="250" value="0"></div>
+        <div class="s-field"><label for="k-fte" data-i18n="kcFte">Full-time share</label><input type="number" id="k-fte" min="0.1" max="1" step="0.05" value="1"></div>
+      </div>
+      <div class="legend" id="legenda-costo" style="margin-top:18px"></div>
+      <div id="grafico-costo"></div>
+      <div class="s-table-wrap"><table class="s-table" id="tab-costo"></table></div>
+      <p class="note" data-i18n="costoNota">Annual pay against annual ceilings, an approximation that is exact when pay is spread evenly over the year. Italy: other INPS contributions and INAIL at 6%, illustrative. Poland: PPK for half of pay, converted at the ECB rate. Germany: average additional health contribution and accident insurance at the 2025 trade-association average. Spain: open-ended contract, accident tariff for office work. Every rate and its source is in the verification register.</p>
+    </section>
+  </div>
+
+  <footer class="s-foot"><span data-i18n="footer">The same calculations as the model's Python pipeline, checked against it on every change. Not payroll or tax advice.</span>
+    <a href="../" data-i18n="memo">Memo</a> · <a href="https://github.com/D0M3N1C0X/workforce-cost-model/blob/main/docs/verification.md" data-i18n="registro">Verification register</a> ·
+    <a href="https://github.com/D0M3N1C0X/workforce-cost-model" data-i18n="codice">Code</a></footer>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

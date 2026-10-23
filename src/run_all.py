@@ -9,6 +9,7 @@ Deterministic: the same inputs give the same outputs.
 import time
 
 import build_memo
+import build_web
 import build_workbook
 import model
 import report_html
@@ -22,6 +23,8 @@ def main() -> None:
     build_memo.write(out)
     report_html.build()
     print("memo -> reports/cfo_memo.md, reports/index.html, reports/figures/")
+    build_web.write_inputs(out)
+    print(f"simulator -> web/inputs.json; {build_web.write_vectors(out)} cases for the JavaScript check")
     print(f"done in {time.perf_counter() - start:.1f}s")
 
 
