@@ -121,7 +121,7 @@ export function monthly({ months, remediation }, p) {
 
 export function number(v, decimalComma) {
   if (typeof v === "number") return v;
-  let t = String(v ?? "").replace(/[\s€$£]|zł|PLN|EUR/gi, "");
+  let t = String(v ?? "").replace(/[\s€$£%]|zł|PLN|EUR/gi, "");
   if (t === "") return 0;
   if (decimalComma) t = t.replace(/\./g, "").replace(",", ".");
   else if (/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(t)) t = t.replace(/,/g, "");

@@ -43,7 +43,9 @@ const UI = {
     hScenario: "Scenario", hCosto: "FY2027 cost", hDelta: "Change", hFteMedi: "Average FTE", hFteFine: "Closing FTE", hAssunzioni: "Hires",
     hCostoAss: "Hiring cost", hEquitaC: "Pay gaps",
     frase: "{s}: FY2027 costs {c}, {d} {pm} than {b} ({cb}). Headcount {vv} {v}, pay rates {rv} {r}{e}. The year closes with {f} FTE, {df} {mf} than today{h}.",
-    fraseEquita: ", closing pay gaps adds {x}", fraseAss: "; {n} hires cost {x} to recruit",
+    fraseEquita: ", closing pay gaps adds {x}", fraseAss: "; {n} hires cost {x} to recruit", fraseAss1: "; one hire costs {x} to recruit",
+    fraseUguale: "{s}: FY2027 costs {c}, the same as {b}. Headcount {vv} {v}, pay rates {rv} {r}{e}. The year closes with {f} FTE, {df} {mf} than today{h}.",
+    eNessunFte: "No employee with a full-time share above zero in the file.",
     piu: "more", meno: "less", piuFte: "more", menoFte: "fewer", aggiunge: "adds", toglie: "saves", aggiungono: "add", tolgono: "save",
     costoTitolo: "What one employee costs the employer", costoSub: "The same pay in four countries: gross pay plus every employer contribution, for a year of 2026.",
     kcRal: "Annual base salary, full time", kcBonus: "Annual bonus", kcFte: "Full-time share",
@@ -97,7 +99,9 @@ const UI = {
     hScenario: "Scenario", hCosto: "Costo FY2027", hDelta: "Variazione", hFteMedi: "FTE medi", hFteFine: "FTE a fine anno", hAssunzioni: "Assunzioni",
     hCostoAss: "Costo delle assunzioni", hEquitaC: "Divari",
     frase: "{s}: il FY2027 costa {c}, il {d} in {pm} rispetto al {b} ({cb}). L'organico {vv} {v}, le retribuzioni {rv} {r}{e}. L'anno chiude con {f} FTE, {df} in {mf} di oggi{h}.",
-    fraseEquita: ", chiudere i divari retributivi aggiunge {x}", fraseAss: "; {n} assunzioni costano {x} di selezione",
+    fraseEquita: ", chiudere i divari retributivi aggiunge {x}", fraseAss: "; {n} assunzioni costano {x} di selezione", fraseAss1: "; un'assunzione costa {x} di selezione",
+    fraseUguale: "{s}: il FY2027 costa {c}, come il {b}. L'organico {vv} {v}, le retribuzioni {rv} {r}{e}. L'anno chiude con {f} FTE, {df} in {mf} di oggi{h}.",
+    eNessunFte: "Nel file non c'è nessun dipendente con una quota di tempo pieno sopra zero.",
     piu: "più", meno: "meno", piuFte: "più", menoFte: "meno", aggiunge: "aggiunge", toglie: "toglie", aggiungono: "aggiungono", tolgono: "tolgono",
     costoTitolo: "Quanto costa un dipendente all'azienda", costoSub: "La stessa retribuzione in quattro paesi: lordo più tutti i contributi a carico dell'azienda, per un anno del 2026.",
     kcRal: "Retribuzione base annua, a tempo pieno", kcBonus: "Bonus annuo", kcFte: "Quota di tempo pieno",
@@ -181,9 +185,10 @@ const chiaveSalvati = () => `strumenti.wcm.scenari.${dati.kind === "sample" ? "s
 let salvati = store.get(chiaveSalvati(), []);
 
 function calcola(s) {
-  const p = { months: CFG.months, merit: s.merit, merit_month: s.merit_month, time_to_hire: s.time_to_hire,
+  const merit = Object.fromEntries(dati.countries.map((c) => [c, s.merit[c] ?? dati.merit[c] ?? CFG.client.merit[c]]));
+  const p = { months: CFG.months, merit, merit_month: s.merit_month, time_to_hire: s.time_to_hire,
     cost_per_hire: Object.fromEntries(dati.countries.map((c) => [c, dati.cost_per_hire[c] ?? CFG.client.cost_per_hire[c]])),
-    remediation: s.remediation, loaded_factor: CFG.loaded_factor };
+    remediation: Object.fromEntries(dati.countries.map((c) => [c, s.remediation[c] ?? 0])), loaded_factor: CFG.loaded_factor };
   const f = forecast(celle(), s, p);
   const rows = summary(f, baseline(), p).sort((x, y) => CFG.countries.indexOf(x.country) - CFG.countries.indexOf(y.country));
   const tot = {};
@@ -216,8 +221,16 @@ function leggiLeve() {
   scenario.freeze_from = Number($("l-blocco").value);
   scenario.merit_month = Number($("l-mese-merito").value);
   scenario.remediation_from = Number($("l-equita").value);
-  scenario.merit = Object.fromEntries([...document.querySelectorAll("[data-merito]")].map((i) => [i.dataset.merito, Number(i.value) / 100]));
-  scenario.remediation = Object.fromEntries([...document.querySelectorAll("[data-equita]")].map((i) => [i.dataset.equita, Number(i.value)]));
+  // the boxes show rounded values: a value changes only when the user changes its box
+  const tieni = (vecchio, mostrato, letto, nuovo) => (letto === mostrato ? vecchio : nuovo);
+  scenario.merit = Object.fromEntries([...document.querySelectorAll("[data-merito]")].map((i) => {
+    const c = i.dataset.merito, v = scenario.merit[c] ?? 0;
+    return [c, tieni(v, Math.round(v * 1000) / 10, Number(i.value), Number(i.value) / 100)];
+  }));
+  scenario.remediation = Object.fromEntries([...document.querySelectorAll("[data-equita]")].map((i) => {
+    const c = i.dataset.equita, v = scenario.remediation[c] ?? 0;
+    return [c, tieni(v, Math.round(v), Number(i.value), Number(i.value))];
+  }));
   mostra();
 }
 ["nome", "l-uscite", "l-sostituzioni", "l-crescita", "l-tth", "l-blocco", "l-mese-merito", "l-equita"].forEach((id) => $(id).addEventListener("input", leggiLeve));
@@ -300,6 +313,7 @@ function carica() {
       if (fte > 1.5) fte /= 100;
       return { country, department: String(r.department ?? "").trim() || "—", fte, base, bonus: mapping.bonus ? num(r.bonus) : 0 };
     }).filter((r) => r.fte > 0);
+    if (!rows.length) throw new Error(t("eNessunFte"));
     const cells = cellsFromRoster(rows, R);
     const countries = CFG.countries.filter((c) => cells.some((x) => x.country === c));
     dati = { kind: "client", name: file.name, people: rows.length, cells, countries, remediation: {}, merit: CFG.client.merit,
@@ -307,7 +321,10 @@ function carica() {
     salvati = store.get(chiaveSalvati(), []);
     scenario = preset(CFG.scenarios[0]);
     scriviCliente(); scriviLeve(); mostra();
-  } catch (e) { messaggio(e.message); }
+  } catch (e) {
+    messaggio(e.message);
+    $("nome-organico").textContent = ""; drop.classList.remove("is-done");    // the data on screen is still the old one
+  }
 }
 $("torna-esempio").addEventListener("click", () => {
   dati = esempio(); file = null; input.value = "";
@@ -323,12 +340,13 @@ const nomeBase = () => (dati.kind === "sample" ? t("base26") : t("baseOggi"));
 
 function frase(s, r) {
   const { tot } = r, d = tot.fy27_cost / tot.fy26_cost - 1, df = tot.closing_fte - r.opening;
-  return t("frase", { s: s.name, c: M(tot.fy27_cost), d: pct(Math.abs(d)), pm: d >= 0 ? t("piu") : t("meno"), b: nomeBase(), cb: M(tot.fy26_cost),
+  const hires = Math.round(tot.fy27_hires);
+  return t(Math.abs(d) < 0.0005 ? "fraseUguale" : "frase", { s: s.name, c: M(tot.fy27_cost), d: pct(Math.abs(d)), pm: d >= 0 ? t("piu") : t("meno"), b: nomeBase(), cb: M(tot.fy26_cost),
     vv: tot.bridge_volume >= 0 ? t("aggiunge") : t("toglie"), v: M(Math.abs(tot.bridge_volume)),
     rv: tot.bridge_rate >= 0 ? t("aggiungono") : t("tolgono"), r: M(Math.abs(tot.bridge_rate)),
     e: tot.fy27_remediation > 0 ? t("fraseEquita", { x: M(tot.fy27_remediation) }) : "",
     f: i18n.number(tot.closing_fte, 0), df: i18n.number(Math.abs(df), 0), mf: df >= 0 ? t("piuFte") : t("menoFte"),
-    h: tot.fy27_hires >= 0.5 ? t("fraseAss", { n: i18n.number(tot.fy27_hires, 0), x: M(tot.fy27_hiring_cost) }) : "" });
+    h: hires === 0 ? "" : t(hires === 1 ? "fraseAss1" : "fraseAss", { n: i18n.number(hires, 0), x: M(tot.fy27_hiring_cost) }) });
 }
 
 function mostra() {
@@ -351,8 +369,10 @@ function serie(r) {
   const all = [{ name: scenario.name, mesi: r.mesi }, ...altri().map((s) => ({ name: s.name, mesi: calcola(s).mesi }))];
   return all.slice(0, 5);
 }
-// the saved scenarios other than the one on screen
-const altri = () => salvati.filter((s) => s.name !== scenario.name);
+// the saved scenarios other than the one on screen (the same levers, whatever the name)
+const ordina = (x) => (x && typeof x === "object" ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, ordina(x[k])])) : x);
+const leve = (s) => JSON.stringify(ordina({ ...s, name: "" }));
+const altri = () => salvati.filter((s) => leve(s) !== leve(scenario));
 function grafico(r) {
   const S = serie(r), W = 720, H = 260, l = 64, b = 28, top = 12, right = 12;
   const vals = S.flatMap((s) => s.mesi.map((m) => m[metrica]));
@@ -374,7 +394,7 @@ document.querySelectorAll("#metrica button").forEach((bt) => bt.addEventListener
 }));
 
 function confronto(r) {
-  const righe = [{ s: scenario, r, corrente: true }, ...salvati.map((s, i) => ({ s, r: calcola(s), i })).filter(({ s }) => s.name !== scenario.name)];
+  const righe = [{ s: scenario, r, corrente: true }, ...salvati.map((s, i) => ({ s, r: calcola(s), i })).filter(({ s }) => leve(s) !== leve(scenario))];
   $("confronto-sub").textContent = salvati.length ? t("confrontoSub") : t("confrontoVuoto");
   $("tab-confronto").innerHTML = `<tr><th class="l">${esc(t("hScenario"))}</th><th>${esc(t("hCosto"))}</th><th>${esc(t("hDelta"))}</th><th>${esc(t("hFteMedi"))}</th><th>${esc(t("hFteFine"))}</th><th>${esc(t("hAssunzioni"))}</th><th>${esc(t("hCostoAss"))}</th><th>${esc(t("hEquitaC"))}</th><th></th></tr>` +
     righe.map(({ s, r: x, corrente, i }) => {
@@ -388,7 +408,10 @@ function confronto(r) {
   }));
 }
 $("salva").addEventListener("click", () => {
-  salvati = [...salvati.filter((s) => s.name !== scenario.name), JSON.parse(JSON.stringify(scenario))].slice(-4);
+  // the same levers replace the saved copy; a different scenario with a name already used gets a number
+  let nome = scenario.name, k = 2;
+  while (salvati.some((s) => s.name === nome && leve(s) !== leve(scenario))) nome = `${scenario.name} (${k++})`;
+  salvati = [...salvati.filter((s) => leve(s) !== leve(scenario)), JSON.parse(JSON.stringify({ ...scenario, name: nome }))].slice(-4);
   store.set(chiaveSalvati(), salvati);
   $("salva").textContent = `✓ ${t("salvato")}`;
   setTimeout(() => { $("salva").textContent = t("salva"); }, 1500);
@@ -397,13 +420,13 @@ $("salva").addEventListener("click", () => {
 $("stampa").addEventListener("click", () => print());
 
 $("scarica-xlsx").addEventListener("click", () => {
-  const tutti = [scenario, ...salvati.filter((s) => s.name !== scenario.name)];
+  const tutti = [scenario, ...altri()];
   const ris = tutti.map((s) => ({ s, r: calcola(s) }));
   const leve = [[t("xLeve"), ...tutti.map((s) => s.name)],
     [t("lUscite"), ...tutti.map((s) => s.attrition_x)], [t("lSostituzioni"), ...tutti.map((s) => s.replacement)],
     [t("lCrescita"), ...tutti.map((s) => s.growth_x)], [t("lBlocco"), ...tutti.map((s) => (s.freeze_from ? meseNome(s.freeze_from) : t("nessuno")))],
     [t("lTth"), ...tutti.map((s) => s.time_to_hire)], [t("lMeseMerito"), ...tutti.map((s) => meseNome(s.merit_month))],
-    ...dati.countries.map((c) => [`${t("lMeseMerito")} · ${L().paesi[c]} (%)`, ...tutti.map((s) => Math.round(s.merit[c] * 1000) / 10)]),
+    ...dati.countries.map((c) => [`${t("lMeseMerito")} · ${L().paesi[c]} (%)`, ...tutti.map((s) => Math.round((s.merit[c] ?? dati.merit[c] ?? CFG.client.merit[c]) * 1000) / 10)]),
     [t("lEquita"), ...tutti.map((s) => (s.remediation_from ? meseNome(s.remediation_from) : t("nessuno")))],
     ...dati.countries.map((c) => [`${t("lEquita")} · ${L().paesi[c]} (€)`, ...tutti.map((s) => s.remediation[c] || 0)])];
   if (dati.kind === "client") leve.push([t("cUscite"), cliente.attrition], [t("cCrescita"), cliente.growth]);
@@ -458,6 +481,7 @@ document.querySelectorAll("#viste button").forEach((b) => b.addEventListener("cl
   document.querySelectorAll("#viste button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   $("vista-scenari").style.display = b.dataset.v === "scenari" ? "block" : "none";
   $("vista-costo").style.display = b.dataset.v === "costo" ? "block" : "none";
+  history.replaceState(null, "", b.dataset.v === "costo" ? "#costo" : location.pathname + location.search);
 }));
 const daHash = () => document.querySelector(`#viste button[data-v="${location.hash === "#costo" ? "costo" : "scenari"}"]`).click();
 addEventListener("hashchange", daHash);

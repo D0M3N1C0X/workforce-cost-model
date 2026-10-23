@@ -101,7 +101,7 @@ equivalents (F₁, R₁) on payroll only:
 The memo splits the base-case rate effect further: the pay review's own cost, computed from the
 forecast, and the remainder, which is the lower cost per FTE of the June 2026 workforce.
 
-## Two engines, one answer
+## Three engines, one answer
 
 A third engine runs in the browser: the [scenario simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/)
 recomputes `forecast()` and `summary()` for any choice of levers, and what one employee costs in four countries
@@ -136,6 +136,10 @@ Stated here so a reviewer can judge them; each one is where a real budget would 
   their annualised pay rather than on what they earned in the year.
 - **A client's staff in the simulator** start from today's run-rate (today's FTE at today's loaded cost, for a
   year), with one leavers rate and one growth rate for everyone: a snapshot carries no history.
+- **Ceilings the model leaves out**, which overstate the cost of high earners a little: the German accident
+  insurance is charged on all pay, while each Berufsgenossenschaft caps it at its own maximum annual earnings; the
+  Italian IVS contribution has a ceiling for people first insured after 1995, and 0.50 points of it are offset
+  against the TFR, neither of which the model applies.
 - **One exchange rate** for the whole period. Cost in euro moves with the zloty; a finance team
   would budget at its own planning rate.
 - **Not modelled:** overtime, holiday accruals, benefits in kind, severance on exit, reduced
