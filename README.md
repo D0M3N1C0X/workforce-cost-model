@@ -1,25 +1,32 @@
-# Workforce Cost Model
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="site-assets/cover-dark.png">
+  <img alt="What will next year's people cost be? €111.0M in FY2027's base case, €5.8M over budget in FY2026, €59,382 a fully loaded FTE in Milan." src="site-assets/cover-light.png">
+</picture>
 
-What does a person really cost in Milan and in Kraków, why did last year's people budget
-overrun, and what will next year cost if the company freezes hiring, loses more people or starts
-closing its pay gaps? This repository answers those questions for a two-country employer **as an
-HR-finance team would**: a driver-based Excel model with live formulas, a memo to the finance
-director, and one reproducible pipeline that checks every figure twice.
+<p align="center">
+  <a href="https://d0m3n1c0x.github.io/workforce-cost-model/simulator/"><b>Try the scenario simulator</b></a> ·
+  <a href="https://d0m3n1c0x.github.io/workforce-cost-model/">Read the CFO memo</a> ·
+  <a href="https://github.com/D0M3N1C0X/workforce-cost-model/raw/main/deliverables/workforce_cost_model.xlsx">Excel model</a>
+</p>
 
-[![CI](https://github.com/D0M3N1C0X/workforce-cost-model/actions/workflows/ci.yml/badge.svg)](https://github.com/D0M3N1C0X/workforce-cost-model/actions/workflows/ci.yml)
-![python](https://img.shields.io/badge/python-3.12%2B-blue)
-![stack](https://img.shields.io/badge/pandas%20%C2%B7%20openpyxl%20%C2%B7%20LibreOffice-informational)
-![license](https://img.shields.io/badge/license-MIT-lightgrey)
+<p align="center">
+  <a href="https://github.com/D0M3N1C0X/workforce-cost-model/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/D0M3N1C0X/workforce-cost-model/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12%2B-0071e3">
+  <img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-6e6e73">
+</p>
+
+## Why this matters
+
+People are most of the cost base, and the budget for them is usually a spreadsheet nobody can audit: an
+average salary times a headcount, a percentage for "on-costs", and a variance explained after the fact. This model
+answers the questions a finance director actually asks, for an employer in **Milan and Kraków**, **as HR and finance
+would build it together**: what does one person really cost in each country, why did last year's people budget
+overrun, and what will next year cost if we freeze hiring, lose more people or start closing pay gaps?
 
 > **Synthetic company, real rules.** The employees are the organisation analysed in
-> [hr-people-analytics](https://github.com/D0M3N1C0X/hr-people-analytics); the budget, growth
-> plans and pay review are invented. Italian and Polish employer costs follow the 2026 rules,
-> each with its source and status in the [verification register](docs/verification.md). Not
-> payroll or tax advice.
-
-### ▶ [Try the scenario simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/) · [Read the memo online](https://d0m3n1c0x.github.io/workforce-cost-model/) · [Download the Excel model](https://github.com/D0M3N1C0X/workforce-cost-model/raw/main/deliverables/workforce_cost_model.xlsx)
-
----
+> [hr-people-analytics](https://github.com/D0M3N1C0X/hr-people-analytics); the budget, growth plans and pay review are
+> invented. Italian and Polish employer costs follow the 2026 rules (German and Spanish ones too, in the calculator),
+> each with its source and status in the [verification register](docs/verification.md). Not payroll or tax advice.
 
 ## The answer, for the finance director
 
@@ -29,9 +36,16 @@ director, and one reproducible pipeline that checks every figure twice.
 | **FY2027 costs €111.0M in the base case (+3.6%)**: more FTE and the January pay review. | **A hiring freeze from October cuts it to €104.6M**, but the year ends with 278 fewer FTE than the base case: a capacity decision, not a finance one. |
 | **Higher attrition barely moves payroll** but lifts recruitment cost to €1.54M. | **Closing pay gaps from January 2027 adds €0.76M** to FY2027 and €1.52M a year after, using the gaps found by [pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit). |
 
-![Volume explains the FY2026 overrun](reports/figures/02_variance_bridge.svg)
+<img alt="Volume explains the FY2026 overrun" src="reports/figures/02_variance_bridge.svg" width="100%">
 
----
+## Run your own scenarios
+
+The simulator moves the levers a budget meeting argues about (leavers, backfills, growth, a hiring freeze, the pay
+review, closing pay gaps) and shows FY2027 month by month, the bridge from last year and the sentence for the CFO,
+with up to five scenarios side by side. It runs on the sample company or on a client's own staff list, which never
+leaves the computer, and it also tells you what one employee costs in Italy, Poland, Germany and Spain, item by item.
+
+<p align="center"><a href="https://d0m3n1c0x.github.io/workforce-cost-model/simulator/"><img alt="The scenario simulator: levers, FY2027 cost, the sentence for the CFO and scenarios compared month by month." src="site-assets/tool.webp" width="100%"></a></p>
 
 ## What you get
 
@@ -42,15 +56,35 @@ director, and one reproducible pipeline that checks every figure twice.
 | [`cfo_memo.md`](reports/cfo_memo.md) | the finance director | Answer first: where the FY2026 budget went, what an employee costs in each country, FY2027 under four scenarios, five recommendations, method and limits. |
 | [`docs/method.md`](docs/method.md) · [`docs/verification.md`](docs/verification.md) | reviewers | Every formula and simplification; the source and status of every rate and cap. |
 
-## What this project demonstrates
+## The judgement calls
 
-| HR and payroll | Finance and analytics | Delivery and engineering |
-|---|---|---|
-| Employer cost in four systems: INPS and TFR in Italy; ZUS, the annual 30-times cap, Labour Fund, FGŚP and PPK in Poland; German ceilings and levies; the Spanish maximum base and solidarity contribution | Budget against actual with a volume, mix and rate variance that adds up exactly | A client-ready Excel model: inputs in blue, formulas in black, key assumptions in yellow, one Settings sheet, a scenario picker, no dynamic arrays |
-| Attrition, time to hire and replacement as forecast drivers | A month-by-month driver-based forecast under four scenarios, with a bridge from last year | **Three engines, one answer:** pandas and Excel formulas reconciled on 570 checks, recalculated in CI by LibreOffice; the browser simulator checked against the model on 9,679 values |
-| Pay-equity remediation priced with employer on-costs | Recruitment cost kept apart from payroll, so attrition shows its real price | Deterministic outputs, tests for every identity, a verification register for every rate |
+- **A person's cost is loaded with every employer contribution**, ceiling by ceiling: INPS and TFR in Italy; ZUS with
+  its annual 30-times cap, the Labour Fund, FGŚP and PPK in Poland. "Salary plus 30%" is the error this replaces.
+- **The variance is split into volume, mix and rate**, and the parts add up exactly to the overrun: the finance
+  director sees that headcount, not pay, explains last year.
+- **Fiscal years run July to June**, so FY2026 ends on the date of the source snapshot, and a month is its month-end
+  payroll.
+- **The forecast moves FTE, not people**: leavers follow last year's attrition, 90% are replaced after two months,
+  planned growth comes on top.
+- **Recruitment cost is kept apart from payroll**, so higher attrition shows its real price instead of looking like a
+  saving.
+- **Closing pay gaps is priced with on-costs**, from the gaps found by the
+  [pay transparency kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit), and starts before the first
+  reports are due.
 
-## How it fits together
+Every formula and simplification is in [docs/method.md](docs/method.md).
+
+## Built to be checked
+
+| | |
+|---|---|
+| **Three engines, one answer** | pandas, the Excel model's live formulas (reconciled on 570 checks, recalculated in CI by LibreOffice) and the browser simulator (checked against the model on 9,679 values) |
+| **Every rate sourced** | a [verification register](docs/verification.md) with the source, its status and the date each rate and ceiling was read |
+| **A client-ready workbook** | inputs in blue, formulas in black, key assumptions in yellow, one Settings sheet, a scenario picker, no dynamic arrays |
+| **Reproducible** | one command rebuilds every output; CI fails if a rebuilt file differs from the committed one |
+
+<details>
+<summary><b>For engineers: how it fits together, how to run it</b></summary>
 
 ```mermaid
 flowchart LR
@@ -64,32 +98,17 @@ flowchart LR
     X --> C{check_workbook.py<br/>formulas = pandas?}
 ```
 
-## Run it
-
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 python src/run_all.py        # a few seconds
-```
-
-Tests, including a sample workbook calculated in pure Python and checked against pandas
-(about a minute and a half):
-
-```bash
 pip install -r requirements-dev.txt
-pytest
+pytest                       # includes a sample workbook calculated in pure Python
+node tests/js/check_engine.mjs   # the simulator against the model
 ```
 
-The reconciliation check, the LibreOffice recalculation and the byte-stable workbook come from [excel-twin](https://github.com/D0M3N1C0X/excel-twin), a small library shared by the portfolio.
-
-The full workbook is recalculated by LibreOffice in CI:
-
-```bash
-python src/recalc_libreoffice.py deliverables/workforce_cost_model.xlsx build/
-python src/check_workbook.py build/workforce_cost_model.xlsx
-```
-
-## What's inside
+The reconciliation check, the LibreOffice recalculation and the byte-stable workbook come from
+[excel-twin](https://github.com/D0M3N1C0X/excel-twin), a small library shared by the portfolio.
 
 ```
 ├── data/source/employees.csv    the organisation from hr-people-analytics (checksum pinned)
@@ -100,7 +119,7 @@ python src/check_workbook.py build/workforce_cost_model.xlsx
 │   ├── check_workbook.py        proves the formulas reproduce pandas
 │   ├── recalc_libreoffice.py    recalculates the workbook headless, for CI
 │   ├── build_memo.py            the memo and its figures
-│   ├── charts.py                four SVG charts, validated palette, light and dark
+│   ├── charts.py                four SVG charts in the portfolio identity, light and dark
 │   ├── report_html.py           the memo as one HTML page
 │   ├── deterministic.py         byte-stable Office files
 │   └── run_all.py               the whole pipeline
@@ -110,24 +129,12 @@ python src/check_workbook.py build/workforce_cost_model.xlsx
 └── tests/
 ```
 
-## Choices worth knowing
-
-- **Fiscal years run July to June**, so FY2026 ends on the date of the source snapshot.
-- **A month is its month-end payroll**: people are counted from their hire date to the day
-  before they leave.
-- **The rate variance is about who is on the payroll**, not pay rises: the source has one salary
-  per person.
-- **The FY2027 forecast moves FTE, not people**: leavers follow FY2026 attrition, 90% are
-  replaced after two months, and planned growth comes on top.
-- **Remediation is loaded with employer costs** but not capped, and starts before the first
-  pay-transparency reports are due.
-
-Full reasoning, and every simplification, in [docs/method.md](docs/method.md).
+</details>
 
 ## About
 
-Built by **Domenico Perroni** — HR advisory, people analytics and media education, based in Kraków.
-[GitHub profile](https://github.com/D0M3N1C0X) · [LinkedIn](https://www.linkedin.com/in/domenico-perroni) · [ORCID](https://orcid.org/0009-0001-8806-5188)
+Built by **Domenico Perroni**: HR advisory for the Italian market, people analytics and reward, based in Kraków.
+[GitHub](https://github.com/D0M3N1C0X) · [LinkedIn](https://www.linkedin.com/in/domenico-perroni) · [Portfolio](https://d0m3n1c0x.github.io/)
 
 **More from the same portfolio**
 
