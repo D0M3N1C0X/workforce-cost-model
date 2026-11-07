@@ -799,9 +799,10 @@ class Model:
             put(ws, f"B{r}", s[0])
             for j, c in enumerate(C.ENTITIES):
                 put(ws, f"{col(3 + j)}{r}", f"=Scenarios!I{self.scen_rows[(s[0], c)]}", color=GREEN, fmt=EUR)
-        bar.add_data(Reference(ws, min_col=3, max_col=4, min_row=bh, max_row=r), titles_from_data=True)
+        bar.add_data(Reference(ws, min_col=3, max_col=2 + len(C.ENTITIES), min_row=bh, max_row=r),
+                     titles_from_data=True)
         bar.set_categories(Reference(ws, min_col=2, min_row=bh + 1, max_row=r))
-        for s_, c_ in zip(bar.series, ["2A78D6", "EB6834"]):
+        for s_, c_ in zip(bar.series, ["2A78D6", "EB6834", "1BAF7A", "EDA100"], strict=True):
             s_.graphicalProperties.solidFill = c_
         ws.add_chart(bar, "G22")
 
@@ -873,7 +874,7 @@ class Model:
         put(ws, f"B{r}", "Check", bold=True, size=11)
         put(ws, f"C{r}", f"={self.recon_result}", color=GREEN, bold=True)
         put(ws, f"B{r + 2}", "Data", bold=True, size=11)
-        put(ws, f"C{r + 2}", "Synthetic: the Italian and Polish entities of the organisation analysed in hr-people-analytics. "
+        put(ws, f"C{r + 2}", "Synthetic: the four entities of the organisation analysed in hr-people-analytics. "
                              "Budget, growth, pay review and cost per hire are invented for the demonstration.", wrap=True)
         ws.row_dimensions[r + 2].height = 28
         put(ws, f"B{r + 3}", "Limits", bold=True, size=11)

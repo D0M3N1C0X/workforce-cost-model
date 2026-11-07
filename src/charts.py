@@ -47,7 +47,7 @@ def fte_budget_actual(months, budget, actual, title):
     x = _scale(0, len(months) - 1, L, W - R)
     y = _scale(lo, hi, H - B, T)
     body = [f'<text x="24" y="34" class="title">{escape(title)}</text>',
-            '<text x="24" y="54">Month-end FTE, Italian and Polish entities together, July 2025 to June 2026</text>',
+            '<text x="24" y="54">Month-end FTE, all four entities together, July 2025 to June 2026</text>',
             f'<rect x="{L}" y="66" width="18" height="3" fill="var(--s2)"/><text x="{L + 24}" y="71">Budget</text>',
             f'<rect x="{L + 90}" y="66" width="18" height="3" fill="var(--s1)"/><text x="{L + 114}" y="71">Actual</text>']
     for v in range(lo, hi + 1, step):
