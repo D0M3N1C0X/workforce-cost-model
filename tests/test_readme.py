@@ -24,8 +24,11 @@ def test_readme_quotes_current_figures(out, tmp_path):
         f"over budget, at {B.m(base['fy26_cost'])}",
         f"{base['fy26_fte']:,.0f} FTE on average",
         f"added {B.m(ve['volume'].sum())}",
-        f"€{per_fte['IT']:,.0f} per FTE in Milan and €{per_fte['PL']:,.0f} in Kraków",
-        f"{f['above_cap']} people earn above the {C.PL_CAP_PLN:,} PLN cap",
+        f"€{per_fte['DE']:,.0f} per FTE in Munich, €{per_fte['IT']:,.0f} in Milan, €{per_fte['ES']:,.0f} in Barcelona "
+        f"and €{per_fte['PL']:,.0f} in Kraków",
+        f"{f['de_above']} German employees earn above the health and care ceiling",
+        f"{f['es_above']} Spanish ones above the maximum base",
+        f"{f['above_cap']} Polish ones above the ZUS cap",
         f"FY2027 costs {B.m(base['fy27_cost'])} in the base case ({B.signed(base['fy27_cost'] / base['fy26_cost'] - 1)})",
         f"cuts it to {B.m(freeze['fy27_cost'])}",
         f"{base['closing_fte'] - freeze['closing_fte']:,.0f} fewer FTE",

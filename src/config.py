@@ -16,7 +16,8 @@ SOURCE_REPO = "https://github.com/D0M3N1C0X/hr-people-analytics"
 SOURCE_COMMIT = "201495b"
 SOURCE_SHA256 = "372723241e92aa3d233c9298f8a0d2e713e72ff8f0c989e24a7bf743fc7da79c"
 
-ENTITIES = {"IT": "IT · Milan", "PL": "PL · Kraków"}
+# The four entities of the organisation, as in pay-transparency-readiness-kit and ai-act-hr-readiness-kit.
+ENTITIES = {"IT": "IT · Milan", "PL": "PL · Kraków", "DE": "DE · Munich", "ES": "ES · Barcelona"}
 DEPARTMENTS = ["Customer Service", "Operations", "Tech", "Sales", "Finance", "HR"]
 
 # Fiscal years run July to June: FY2026 is the year to 30 June 2026 (the hr-people-analytics
@@ -44,8 +45,7 @@ PL_CAP_PLN = 282_600     # 2026 annual limit for pension and disability contribu
 EUR_PLN = 4.2568         # ECB euro reference rate, monthly average June 2026
 PL_MIN_WAGE_PLN = 4_806  # monthly minimum wage 2026 (Council of Ministers regulation, 11 Sept 2025)
 
-# Germany (2026): employer shares. Used by the employer-cost calculator and the scenario simulator for a
-# client's own staff; the sample company stays Italian and Polish.
+# Germany (2026): employer shares, for the Munich entity, the employer-cost calculator and a client's own staff.
 DE_PENSION = 0.093       # Rentenversicherung, half of 18.6%, capped at DE_CAP_PENSION
 DE_UNEMPLOYMENT = 0.013  # Arbeitslosenversicherung, half of 2.6%, capped at DE_CAP_PENSION
 DE_HEALTH = 0.073        # Krankenversicherung, half of 14.6%, capped at DE_CAP_HEALTH
@@ -78,11 +78,11 @@ BUDGET_GROWTH = {"Customer Service": 0.02, "Operations": 0.00, "Tech": 0.06, "Sa
 # ---- FY2027 forecast ---------------------------------------------------------------------------
 FORECAST_GROWTH = {"Customer Service": 0.02, "Operations": 0.00, "Tech": 0.05, "Sales": 0.03,
                    "Finance": 0.00, "HR": 0.00}
-MERIT = {"IT": 0.025, "PL": 0.050}   # pay review, effective from MERIT_MONTH
+MERIT = {"IT": 0.025, "PL": 0.050, "DE": 0.030, "ES": 0.030}   # pay review, effective from MERIT_MONTH
 MERIT_MONTH = 7                      # month 7 of FY2027 = January 2027
 TIME_TO_HIRE = 2                     # months between a leaver and the backfill starting (at least 1)
 # External recruitment and onboarding cost per hire - illustrative, set from the company's own data.
-COST_PER_HIRE = {"IT": 4000, "PL": 2500}
+COST_PER_HIRE = {"IT": 4000, "PL": 2500, "DE": 5000, "ES": 3000}
 
 # Starting values the simulator offers for a client's own staff, all editable on the page - illustrative.
 CLIENT_DEFAULTS = {"attrition": 0.12, "growth": 0.02,
@@ -92,7 +92,7 @@ CLIENT_DEFAULTS = {"attrition": 0.12, "growth": 0.02,
 # Pay-equity remediation: the upper-bound annual cost of closing flagged category gaps,
 # from pay-transparency-readiness-kit (tableau/categories.csv at commit 95cdf8e).
 KIT_COMMIT = "95cdf8e"
-REMEDIATION = {"IT": 512_476.52, "PL": 674_086.32}
+REMEDIATION = {"IT": 512_476.52, "PL": 674_086.32, "DE": 254_265.13, "ES": 472_873.79}
 
 # Scenarios: attrition multiplier, replacement ratio, growth multiplier, hiring-freeze month
 # (0 = none), remediation start month (0 = none).

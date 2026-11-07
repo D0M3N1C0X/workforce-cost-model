@@ -88,6 +88,26 @@ def plain(x):
     return x
 
 
+def social(L: dict, R: dict) -> str:
+    """Employer contributions for one Roster row, as employer_cost.items() computes them, without the TFR."""
+    g = L["gross"]
+    it = f"{g}*{R['it_ivs']}+{g}*{R['it_other']}"
+    pl_cap = f"MIN({g},{R['cap_eur']})"
+    pl = (f"{pl_cap}*{R['pl_pen']}+{pl_cap}*{R['pl_dis']}+{g}*{R['pl_acc']}+{g}*{R['pl_fp']}+{g}*{R['pl_fgsp']}"
+          f"+{g}*{R['pl_ppk']}*{R['ppk_part']}")
+    rv, kv = f"MIN({g},{R['de_cap_rv']})", f"MIN({g},{R['de_cap_kv']})"
+    de = (f"({rv}*{R['de_pen']}+{rv}*{R['de_unemp']})+({kv}*({R['de_health']}+{R['de_extra']})+{kv}*{R['de_care']})"
+          f"+({rv}*{R['de_ins']}+{rv}*{R['de_u2']})+{g}*{R['de_acc']}")
+    b = f"MIN({g},{R['es_cap']})"
+    band = lambda lo, rate, hi=None: (f"MAX(0,{'MIN(' + g + ',' + hi + ')' if hi else g}-{lo})*{rate}")
+    solidarity = (f"{band(R['es_s1'], R['es_r1'], R['es_s2'])}+{band(R['es_s2'], R['es_r2'], R['es_s3'])}"
+                  f"+{band(R['es_s3'], R['es_r3'])}")
+    es = (f"({b}*{R['es_common']}+{b}*{R['es_mei']})+({b}*{R['es_unemp']}+{b}*{R['es_fogasa']}+{b}*{R['es_training']})"
+          f"+{b}*{R['es_acc']}+({solidarity})")
+    c = L["country"]
+    return f'IF({c}="IT",{it},IF({c}="PL",{pl},IF({c}="DE",{de},{es})))'
+
+
 class Model:
     def __init__(self, out: dict):
         self.o = out
@@ -193,6 +213,37 @@ class Model:
         line("min_eur", "Annual minimum wage in euro (full time)", f"=C{r - 1}*12/{self.refs['fx'].split('!')[1]}",
              EUR, formula=True)
 
+        section("Germany: employer costs (2026)")
+        line("de_pen", "Pension (Rentenversicherung), capped", C.DE_PENSION, PCT, "Half of 18.6%.")
+        line("de_unemp", "Unemployment (Arbeitslosenversicherung), capped", C.DE_UNEMPLOYMENT, PCT, "Half of 2.6%.")
+        line("de_health", "Health (Krankenversicherung), capped", C.DE_HEALTH, PCT, "Half of 14.6%.")
+        line("de_extra", "Additional health contribution, employer half", C.DE_HEALTH_EXTRA, PCT,
+             "Half of the 2.9% average; each insurer sets its own.", True)
+        line("de_care", "Long-term care (Pflegeversicherung), capped", C.DE_CARE, PCT, "Half of 3.6% (Saxony differs).")
+        line("de_ins", "Insolvency levy (U3), up to the pension ceiling", C.DE_INSOLVENCY, PCT)
+        line("de_u2", "Maternity levy (U2), up to the pension ceiling", C.DE_U2, PCT, "Varies by insurer: illustrative.")
+        line("de_acc", "Accident insurance (Berufsgenossenschaft)", C.DE_ACCIDENT, PCT,
+             "2025 average of the trade associations: illustrative.", True)
+        line("de_cap_rv", "Annual ceiling, pension and unemployment", C.DE_CAP_PENSION, EUR, "€8,450 a month.")
+        line("de_cap_kv", "Annual ceiling, health and long-term care", C.DE_CAP_HEALTH, EUR, "€5,812.50 a month.")
+
+        section("Spain: employer costs (2026)")
+        line("es_common", "Common contingencies", C.ES_COMMON, PCT, "Orden PJC/297/2026.")
+        line("es_mei", "Intergenerational equity mechanism (MEI)", C.ES_MEI, PCT)
+        line("es_unemp", "Unemployment, open-ended contract", C.ES_UNEMPLOYMENT, PCT, "6.70% for fixed-term contracts.")
+        line("es_fogasa", "FOGASA", C.ES_FOGASA, PCT)
+        line("es_training", "Vocational training", C.ES_TRAINING, PCT)
+        line("es_acc", "Accident and occupational disease (AT/EP)", C.ES_ACCIDENT, PCT,
+             "Office work tariff: illustrative for other jobs.", True)
+        line("es_cap", "Maximum contribution base, annual", C.ES_CAP, EUR, "€5,101.20 a month.")
+        (f1, r1), (f2, r2), (f3, r3) = C.ES_SOLIDARITY
+        line("es_s1", "Solidarity: floor of band 1 (annual)", f1, EUR, "Pay above the maximum base.")
+        line("es_r1", "Solidarity: employer rate, band 1", r1, PCT)
+        line("es_s2", "Solidarity: floor of band 2 (annual)", f2, EUR, "10% above the maximum base.")
+        line("es_r2", "Solidarity: employer rate, band 2", r2, PCT)
+        line("es_s3", "Solidarity: floor of band 3 (annual)", f3, EUR, "50% above the maximum base.")
+        line("es_r3", "Solidarity: employer rate, band 3", r3, PCT)
+
         section("Target bonus by level (paid at target)")
         header(ws, r, ["Level", "Target"], start=2, height=18)
         r += 1
@@ -227,11 +278,14 @@ class Model:
             put(ws, f"C{r}", C.MERIT[c], color=BLUE, fmt=PCT1, fill=YELLOW)
             put(ws, f"D{r}", C.COST_PER_HIRE[c], color=BLUE, fmt=EUR)
             put(ws, f"E{r}", C.REMEDIATION[c], color=BLUE, fmt=EUR)
-            if c == "IT":
-                f = f"=1+{self.refs['it_ivs']}+{self.refs['it_other']}+1/{self.refs['tfr_div']}"
-            else:
-                f = (f"=1+{self.refs['pl_pen']}+{self.refs['pl_dis']}+{self.refs['pl_acc']}+{self.refs['pl_fp']}"
-                     f"+{self.refs['pl_fgsp']}+{self.refs['pl_ppk']}*{self.refs['ppk_part']}")
+            R_ = self.refs
+            f = {"IT": f"=1+{R_['it_ivs']}+{R_['it_other']}+1/{R_['tfr_div']}",
+                 "PL": (f"=1+{R_['pl_pen']}+{R_['pl_dis']}+{R_['pl_acc']}+{R_['pl_fp']}"
+                        f"+{R_['pl_fgsp']}+{R_['pl_ppk']}*{R_['ppk_part']}"),
+                 "DE": (f"=1+({R_['de_pen']}+{R_['de_unemp']}+{R_['de_health']}+{R_['de_extra']}+{R_['de_care']}"
+                        f"+{R_['de_ins']}+{R_['de_u2']}+{R_['de_acc']})"),
+                 "ES": (f"=1+{R_['es_common']}+{R_['es_mei']}+{R_['es_unemp']}+{R_['es_fogasa']}"
+                        f"+{R_['es_training']}+{R_['es_acc']}")}[c]
             put(ws, f"F{r}", f, fmt="0.0000")
             self.check("Settings", f"On-cost factor {c}", model.loaded_factor(c), f"Settings!F{r}")
             r += 1
@@ -295,10 +349,7 @@ class Model:
                 "bonus": f"={L['base']}*INDEX({R['targets']},MATCH({L['job_level']},{R['levels']},0))",
                 "gross": f"={L['base']}+{L['bonus']}",
                 "capped": f"=MIN({L['gross']},{R['cap_eur']})",
-                "employer_social": (f'=IF({L["country"]}="IT",{L["gross"]}*{R["it_ivs"]}+{L["gross"]}*{R["it_other"]},'
-                                    f'{L["capped"]}*{R["pl_pen"]}+{L["capped"]}*{R["pl_dis"]}+{L["gross"]}*{R["pl_acc"]}'
-                                    f'+{L["gross"]}*{R["pl_fp"]}+{L["gross"]}*{R["pl_fgsp"]}'
-                                    f'+{L["gross"]}*{R["pl_ppk"]}*{R["ppk_part"]})'),
+                "employer_social": "=" + social(L, R),
                 "tfr": f'=IF({L["country"]}="IT",{L["base"]}/{R["tfr_div"]},0)',
                 "loaded_cost": f"={L['gross']}+{L['employer_social']}+{L['tfr']}",
             }
@@ -320,6 +371,13 @@ class Model:
                        f"Roster!{c['loaded_cost']}{i + 2}")
         self.check("Roster", "Total loaded cost, all employees", r["loaded_cost"].sum(),
                    f"SUM(Roster!{c['loaded_cost']}2:{c['loaded_cost']}{self.rlast})")
+        for cc in C.ENTITIES:                    # each country's formula branch, ceilings included
+            self.check("Roster", f"Total loaded cost, {cc}", r.loc[r["country"] == cc, "loaded_cost"].sum(),
+                       f'SUMIF({self.rng("country")},"{cc}",{self.rng("loaded_cost")})')
+        for cc, cap, label in (("DE", C.DE_CAP_PENSION, "German pension ceiling"),
+                               ("ES", C.ES_CAP, "Spanish maximum base")):
+            self.check("Roster", f"Employees above the {label}", int(((r["country"] == cc) & (r["gross"] > cap)).sum()),
+                       f'COUNTIFS({self.rng("country")},"{cc}",{self.rng("gross")},">"&{R["de_cap_rv" if cc == "DE" else "es_cap"]})')
         below = int(((r["country"] == "PL") & (r["salary"] < model.pl_min_wage_eur())).sum())
         self.check("Roster", "Polish full-time salaries below the 2026 minimum wage", below,
                    f'SUMPRODUCT(({self.rng("country")}="PL")*({self.rng("salary")}<{R["min_eur"]}))')
@@ -637,7 +695,9 @@ class Model:
         widths(ws, {"A": 3, "B": 34, "C": 16, "D": 16, "E": 16, "F": 3, **{col(k): 12 for k in range(7, 16)}})
         put(ws, "B4", "Scenario", bold=True)
         put(ws, "C4", f"={self.refs['selected']}", color=GREEN, bold=True, size=12)
-        header(ws, 6, ["", "Measure", *C.ENTITIES, "Both"], start=1, height=20)
+        header(ws, 6, ["", "Measure", *C.ENTITIES, "All"], start=1, height=20)
+        tot = col(3 + len(C.ENTITIES))                       # the total column, after one column per entity
+        span = f"C{{r}}:{col(2 + len(C.ENTITIES))}{{r}}"
         first, last = self.scen_range
         key = lambda c: f'"|"&"{c}"'
         lookup = lambda colname, c: (f"=INDEX(Scenarios!${colname}${first}:${colname}${last},"
@@ -655,33 +715,33 @@ class Model:
             for j, c in enumerate(C.ENTITIES):
                 put(ws, f"{col(3 + j)}{r}", lookup(colname, c), color=GREEN, fmt=fmt)
             if colname == "J":
-                put(ws, f"E{r}", f"=E{r - 1}/E{r - 2}-1", fmt=fmt)
+                put(ws, f"{tot}{r}", f"={tot}{r - 1}/{tot}{r - 2}-1", fmt=fmt)
                 value = shown["fy27_cost"] / shown["fy26_cost"] - 1
             else:
-                put(ws, f"E{r}", f"=C{r}+D{r}", fmt=fmt, bold=True)
+                put(ws, f"{tot}{r}", f"=SUM({span.format(r=r)})", fmt=fmt, bold=True)
                 value = both[colname]
-            self.check("Dashboard", f"{label}, both entities ({C.SCENARIOS[0][0]} selected)", value, f"Dashboard!E{r}")
+            self.check("Dashboard", f"{label}, all entities ({C.SCENARIOS[0][0]} selected)", value,
+                       f"Dashboard!{tot}{r}")
             r += 1
         r += 1
         put(ws, f"B{r}", "FY2026 against budget", bold=True, size=11)
         r += 1
-        header(ws, r, ["", "", *C.ENTITIES, "Both"], start=1, height=18)
+        header(ws, r, ["", "", *C.ENTITIES, "All"], start=1, height=18)
         r += 1
         for label, letter in (("Budget", "E"), ("Actual", "F"), ("Volume", "I"), ("Mix", "J"), ("Rate", "K"),
                               ("Variance", "L")):
             put(ws, f"B{r}", label, bold=label == "Variance")
             for j, c in enumerate(C.ENTITIES):
                 put(ws, f"{col(3 + j)}{r}", f"='Variance FY26'!{letter}{self.var_rows[c]}", color=GREEN, fmt=EUR)
-            put(ws, f"E{r}", f"=C{r}+D{r}", fmt=EUR, bold=label == "Variance")
+            put(ws, f"{tot}{r}", f"=SUM({span.format(r=r)})", fmt=EUR, bold=label == "Variance")
             key = {"Budget": "budget_cost", "Actual": "actual_cost"}.get(label, label.lower())
-            self.check("Dashboard", f"FY2026 {label.lower()}, both entities", self.o["variance_entity"][key].sum(),
-                       f"Dashboard!E{r}")
+            self.check("Dashboard", f"FY2026 {label.lower()}, all entities", self.o["variance_entity"][key].sum(),
+                       f"Dashboard!{tot}{r}")
             r += 1
 
         # chart data: total FTE, FY2026 actual then FY2027 per scenario
         r += 2
-        data_top = r
-        put(ws, f"B{r}", "Chart data: total FTE, both entities", bold=True)
+        put(ws, f"B{r}", "Chart data: total FTE, all entities", bold=True)
         r += 1
         heads = ["Month", "FY2026 actual"] + [s[0] for s in C.SCENARIOS]
         for j, h in enumerate(heads):
@@ -692,15 +752,15 @@ class Model:
             put(ws, f"B{r}", f"=EOMONTH({self.refs['fy26_start']},{m - 1})", fmt=MONTH)
             if m <= 12:
                 a = col(2 + m)
-                put(ws, f"C{r}", f"='Actuals FY26'!{a}{self.act_total['IT']}+'Actuals FY26'!{a}{self.act_total['PL']}", fmt=FTE)
+                put(ws, f"C{r}", "=" + "+".join(f"'Actuals FY26'!{a}{self.act_total[c]}" for c in C.ENTITIES), fmt=FTE)
             for j, s in enumerate(C.SCENARIOS):
-                t_it, t_pl = self.fc_tot[(s[0], "IT")], self.fc_tot[(s[0], "PL")]
+                tots = [self.fc_tot[(s[0], c)] for c in C.ENTITIES]
                 a = col(m - 8) if m > 12 else None     # FY2027 month m-12 sits in column E + (m-13)
                 if m == 12:
                     put(ws, f"{col(4 + j)}{r}", f"=C{r}", fmt=FTE)
                 elif m > 12:
                     put(ws, f"{col(4 + j)}{r}",
-                        f"='{t_it['sheet']}'!{a}{t_it['fte_row']}+'{t_pl['sheet']}'!{a}{t_pl['fte_row']}", fmt=FTE)
+                        "=" + "+".join(f"'{x['sheet']}'!{a}{x['fte_row']}" for x in tots), fmt=FTE)
                     if m == 24:
                         f, _ = self.o["forecasts"][s[0]]
                         self.check("Dashboard", f"Chart: {s[0]} FTE in June 2027",
@@ -772,11 +832,12 @@ class Model:
     def cover(self, ws, names):
         widths(ws, {"A": 3, "B": 24, "C": 100})
         put(ws, "B2", "Workforce Cost Model", bold=True, size=18)
-        put(ws, "B3", "Italy and Poland: FY2026 budget against actual, and FY2027 people cost under four scenarios",
+        put(ws, "B3", "Italy, Poland, Germany and Spain: FY2026 budget against actual, and FY2027 people cost under "
+                      "four scenarios",
             color=MUTED, size=12)
         put(ws, "B5", "What it does", bold=True, size=11)
         lines = [
-            "Prices every employee at fully loaded cost: base pay, target bonus, Italian INPS and TFR, Polish ZUS with the 2026 cap.",
+            "Prices every employee at fully loaded cost: base pay, target bonus, Italian INPS and TFR, Polish ZUS with the 2026 cap, German social insurance and Spanish Seguridad Social with their ceilings.",
             "Rebuilds FY2026 month-end FTE and cost from hire and exit dates, and splits the budget variance into volume, mix and rate.",
             "Forecasts FY2027 month by month from FY2026 attrition, backfills, planned growth and the January pay review.",
             "Compares four scenarios, including a hiring freeze and closing pay gaps before the first pay-transparency report.",

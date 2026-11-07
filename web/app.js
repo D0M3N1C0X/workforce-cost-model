@@ -15,7 +15,7 @@ const UI = {
     lead: "Move the levers - leavers, backfills, growth, a hiring freeze, the pay review, closing pay gaps - and see FY2027 cost, month by month, with the sentence for the CFO. On the sample company or on your own staff.",
     privacy: "Your staff file stays on this computer: the calculations run in this page and nothing is sent anywhere. You can check by going offline once the page has loaded.",
     vistaLabel: "View", vScenari: "Scenarios for FY2027", vCosto: "What one employee costs",
-    step1: "Whose staff", datiEsempio: "The sample company: {n} FTE in Milan and Kraków at 30 June 2026, with the leavers and growth plan of the model. Load your own staff list to run the same scenarios on it.",
+    step1: "Whose staff", datiEsempio: "The sample company: {n} FTE in Milan, Kraków, Munich and Barcelona at 30 June 2026, with the leavers and growth plan of the model. Load your own staff list to run the same scenarios on it.",
     datiCliente: "{f}: {n} employees, {fte} FTE in {p}. Leavers and growth below are yours to set.",
     dropOrganico: "Your staff list", dropOrganicoSub: "Optional · one row per employee: country, department, FTE, annual salary, bonus",
     tornaEsempio: "Use the sample company", modello: "Template:", modelloLink: "staff list", modifica: "Change",
@@ -71,7 +71,7 @@ const UI = {
     lead: "Muovi le leve - uscite, sostituzioni, crescita, blocco delle assunzioni, aumenti, chiusura dei divari retributivi - e vedi il costo del FY2027, mese per mese, con la frase per il CFO. Sull'azienda di esempio o sul tuo personale.",
     privacy: "Il file del personale resta su questo computer: i calcoli girano in questa pagina e niente viene inviato. Puoi verificarlo staccando la rete dopo che la pagina si è aperta.",
     vistaLabel: "Vista", vScenari: "Scenari per il FY2027", vCosto: "Quanto costa un dipendente",
-    step1: "Di chi è il personale", datiEsempio: "L'azienda di esempio: {n} FTE a Milano e Cracovia al 30 giugno 2026, con le uscite e il piano di crescita del modello. Carica il tuo elenco del personale per far girare gli stessi scenari.",
+    step1: "Di chi è il personale", datiEsempio: "L'azienda di esempio: {n} FTE a Milano, Cracovia, Monaco di Baviera e Barcellona al 30 giugno 2026, con le uscite e il piano di crescita del modello. Carica il tuo elenco del personale per far girare gli stessi scenari.",
     datiCliente: "{f}: {n} dipendenti, {fte} FTE in {p}. Uscite e crescita qui sotto le decidi tu.",
     dropOrganico: "Il tuo elenco del personale", dropOrganicoSub: "Facoltativo · una riga per dipendente: paese, reparto, FTE, retribuzione annua, bonus",
     tornaEsempio: "Usa l'azienda di esempio", modello: "Modello:", modelloLink: "elenco del personale", modifica: "Modifica",
@@ -357,7 +357,7 @@ function mostra() {
     [t("kAssunzioni"), `${i18n.number(tot.fy27_hires, 0)} · ${M(tot.fy27_hiring_cost)}`, ""]]
     .map(([k, v, c]) => `<div class="s-kpi ${c}"><div class="k">${esc(k)}</div><div class="v" style="font-size:26px">${v}</div></div>`).join("");
   $("frase").textContent = frase(scenario, r);
-  $("stampa-meta").textContent = t("stampaMeta", { s: scenario.name, d: dati.kind === "sample" ? "Milan · Kraków" : dati.name, oggi: new Date().toLocaleDateString(i18n.lang === "it" ? "it-IT" : "en-GB") });
+  $("stampa-meta").textContent = t("stampaMeta", { s: scenario.name, d: dati.kind === "sample" ? "Milan · Kraków · Munich · Barcelona" : dati.name, oggi: new Date().toLocaleDateString(i18n.lang === "it" ? "it-IT" : "en-GB") });
   const riga = (label, x, cls = "") => `<tr class="${cls}"><td class="l">${esc(label)}</td><td>${M(x.fy26_cost)}</td><td>${M(x.bridge_volume)}</td><td>${M(x.bridge_rate)}</td><td>${M(x.bridge_remediation)}</td><td><b>${M(x.fy27_cost)}</b></td></tr>`;
   $("ponte").innerHTML = `<tr><th class="l">${esc(t("hPaese"))}</th><th>${esc(t("hBase"))} (${esc(nomeBase())})</th><th>${esc(t("hVolume"))}</th><th>${esc(t("hTariffa"))}</th><th>${esc(t("hEquita"))}</th><th>${esc(t("hFy27"))}</th></tr>` +
     r.rows.map((x) => riga(dati.kind === "sample" ? CFG.entities[x.country] : L().paesi[x.country], x)).join("") + (r.rows.length > 1 ? riga(t("hTotale"), tot, "tot") : "");

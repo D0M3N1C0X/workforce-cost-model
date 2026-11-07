@@ -53,6 +53,10 @@ def facts(o: dict) -> dict:
     return {"ve": ve, "tot": tot, "base": base, "freeze": freeze, "high": high, "equity": equity,
             "above_cap": int(((r["country"] == "PL") & (r["gross"] > model.pl_cap_eur())).sum()),
             "pl_n": int((r["country"] == "PL").sum()),
+            "de_above": int(((r["country"] == "DE") & (r["gross"] > C.DE_CAP_HEALTH)).sum()),
+            "de_n": int((r["country"] == "DE").sum()),
+            "es_above": int(((r["country"] == "ES") & (r["gross"] > C.ES_CAP)).sum()),
+            "es_n": int((r["country"] == "ES").sum()),
             "attr": o["attrition"].groupby("country").apply(lambda g: g["leavers"].sum() / g["avg_fte"].sum()),
             "attr_all": o["attrition"]["leavers"].sum() / o["attrition"]["avg_fte"].sum()}
 
@@ -93,8 +97,8 @@ def write(o: dict) -> dict:
         gross = g["gross"].sum()
         return g["employer_social"].sum() / gross, g["tfr"].sum() / gross, g["loaded_cost"].sum() / g["fte"].sum()
 
-    it_soc, it_tfr, it_rate = oncost(snapshot[snapshot["country"] == "IT"])
-    pl_soc, _, pl_rate = oncost(snapshot[snapshot["country"] == "PL"])
+    on = {c: oncost(snapshot[snapshot["country"] == c]) for c in C.ENTITIES}
+    names = {"IT": "Italy", "PL": "Poland", "DE": "Germany", "ES": "Spain"}
     fy26_total = base["fy26_cost"]
     budget_total = ve["budget_cost"].sum()
     var_total = ve["variance"].sum()
@@ -115,9 +119,9 @@ def write(o: dict) -> dict:
 
     L = []
     add = L.append
-    add("# FY2027 people cost: Italy and Poland")
+    add("# FY2027 people cost: Italy, Poland, Germany and Spain")
     add("")
-    add(f"**Scope:** {' and '.join(C.ENTITIES.values())}, {int(round(base['fy26_fte'])):,} FTE on average in FY2026")
+    add(f"**Scope:** {listing(C.ENTITIES.values())}, {round(base['fy26_fte']):,} FTE on average in FY2026")
     add("**Model:** fully loaded cost per employee, FY2026 budget against actual, FY2027 month by month under four "
         "scenarios, in a live Excel model reconciled with pandas")
     add("**Data:** synthetic, the organisation analysed in "
@@ -132,8 +136,8 @@ def write(o: dict) -> dict:
     add(f"- **FY2026 closed {m(var_total)} ({pct(var_total / budget_total)}) over budget, at {m(fy26_total)}.** "
         f"Headcount ran ahead of plan: volume added {m(ve['volume'].sum())}, the department mix "
         f"{m(ve['mix'].sum(), 2)}, while cheaper joiners saved {m(-ve['rate'].sum(), 2)}.")
-    review = (f"the {fy27_months[C.MERIT_MONTH - 1]:%B} pay review ({pct(C.MERIT['IT'])} in Italy, "
-              f"{pct(C.MERIT['PL'])} in Poland)")
+    review = (f"the {fy27_months[C.MERIT_MONTH - 1]:%B} pay review ("
+              + listing(f"{pct(C.MERIT[c])} in {names[c]}" for c in C.ENTITIES) + ")")
     rate_story = ((f"where {review} adds {m(merit)} and the lower cost per FTE of the June 2026 workforce "
                   f"takes back {m(merit - base_bridge['bridge_rate'])}")
                   if merit > base_bridge["bridge_rate"] else f"mostly {review}")
@@ -184,20 +188,31 @@ def write(o: dict) -> dict:
 
     add("## 2. What a fully loaded employee costs")
     add("")
+    rules = {
+        "IT": (f"INPS pension {pct(C.IT_IVS, 2)}, other INPS and INAIL {pct(C.IT_OTHER)} (illustrative), "
+               f"TFR at base pay / {C.TFR_DIVISOR}"),
+        "PL": (f"ZUS pension {pct(C.PL_PENSION, 2)} and disability {pct(C.PL_DISABILITY, 2)} up to the annual cap; "
+               f"accident {pct(C.PL_ACCIDENT, 2)}, Labour Fund {pct(C.PL_LABOUR_FUND, 2)}, FGŚP "
+               f"{pct(C.PL_FGSP, 2)}, PPK {pct(C.PL_PPK, 1)} on {pct(C.PPK_PARTICIPATION, 0)} of pay"),
+        "DE": (f"pension and unemployment {pct(C.DE_PENSION + C.DE_UNEMPLOYMENT, 1)} up to €{C.DE_CAP_PENSION:,}; "
+               f"health, additional contribution and care {pct(C.DE_HEALTH + C.DE_HEALTH_EXTRA + C.DE_CARE, 2)} "
+               f"up to €{C.DE_CAP_HEALTH:,}; levies {pct(C.DE_INSOLVENCY + C.DE_U2, 2)}, accident "
+               f"{pct(C.DE_ACCIDENT, 2)} (illustrative)"),
+        "ES": (f"common contingencies and MEI {pct(C.ES_COMMON + C.ES_MEI, 2)}, unemployment, FOGASA and training "
+               f"{pct(C.ES_UNEMPLOYMENT + C.ES_FOGASA + C.ES_TRAINING, 1)}, AT/EP {pct(C.ES_ACCIDENT, 1)}, up to "
+               f"€{C.ES_CAP:,.0f}; solidarity contribution above it"),
+    }
     add(table(["Employer", "Cost per FTE, June 2026", "Employer social contributions", "TFR", "Contribution rules"],
-              [[C.ENTITIES["IT"], f"€{it_rate:,.0f}", f"{pct(it_soc)} of gross pay", f"{pct(it_tfr)} of gross pay",
-                f"INPS pension {pct(C.IT_IVS, 2)}, other INPS and INAIL {pct(C.IT_OTHER)} (illustrative), "
-                f"TFR at base pay / {C.TFR_DIVISOR}"],
-               [C.ENTITIES["PL"], f"€{pl_rate:,.0f}", f"{pct(pl_soc)} of gross pay", "-",
-                f"ZUS pension {pct(C.PL_PENSION, 2)} and disability {pct(C.PL_DISABILITY, 2)} up to the annual cap; "
-                f"accident {pct(C.PL_ACCIDENT, 2)}, Labour Fund {pct(C.PL_LABOUR_FUND, 2)}, FGŚP "
-                f"{pct(C.PL_FGSP, 2)}, PPK {pct(C.PL_PPK, 1)} on {pct(C.PPK_PARTICIPATION, 0)} of pay"]],
+              [[C.ENTITIES[c], f"€{on[c][2]:,.0f}", f"{pct(on[c][0])} of gross pay",
+                f"{pct(on[c][1])} of gross pay" if c == "IT" else "-", rules[c]] for c in C.ENTITIES],
               "lrrrl"))
     add("")
     add(f"*Gross pay is base pay at contracted FTE plus target bonus. In Poland, {f['above_cap']} of "
         f"{f['pl_n']:,} employees earn above the 2026 cap of {C.PL_CAP_PLN:,} PLN "
-        f"(€{model.pl_cap_eur():,.0f} at {C.EUR_PLN} PLN per euro), so their pension and disability contributions stop part-way through the "
-        f"year.*")
+        f"(€{model.pl_cap_eur():,.0f} at {C.EUR_PLN} PLN per euro), so their pension and disability contributions stop "
+        f"part-way through the year. Ceilings bite harder elsewhere: {f['de_above']} of {f['de_n']:,} German employees "
+        f"earn above the health and care ceiling, and {f['es_above']} of {f['es_n']:,} Spanish ones above the maximum "
+        f"base, where the solidarity contribution takes over at a much lower rate.*")
     add("")
 
     add("## 3. FY2027 under four scenarios")
@@ -218,7 +233,7 @@ def write(o: dict) -> dict:
     add("")
     add("![FTE paths](figures/04_fte_paths.svg)")
     add("")
-    add(f"FY2026 attrition was {pct(f['attr']['IT'])} in Italy and {pct(f['attr']['PL'])} in Poland. The forecast "
+    add("FY2026 attrition was " + listing(f"{pct(f['attr'][c])} in {names[c]}" for c in C.ENTITIES) + ". The forecast "
         f"backfills {pct(C.SCENARIOS[0][2], 0)} of leavers after {C.TIME_TO_HIRE} months, so each extra point of "
         f"attrition adds about {k(hiring_per_point)} of recruitment cost at the assumed cost per hire.")
     add("")
@@ -235,7 +250,8 @@ def write(o: dict) -> dict:
         f"{base['closing_fte'] - freeze['closing_fte']:,.0f} FTE short.")
     add("4. **Price attrition in the budget.** Recruitment cost rises with every leaver, even when payroll does not.")
     add("5. **Replace the illustrative rates with the payroll provider's:** other INPS contributions and INAIL, "
-        "the Polish accident rate, PPK participation, and cost per hire.")
+        "the Polish accident rate, PPK participation, the German insurer's additional contribution and accident "
+        "rate, the Spanish AT/EP tariff, and cost per hire.")
     add("")
 
     add("## 5. Method and limits")

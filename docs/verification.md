@@ -1,7 +1,7 @@
 # Verification register
 
 Every rate, cap and rule the model relies on, where it comes from and how far it has been
-checked. Checked on **16 and 17 September 2026**; Germany and Spain on **23 October 2026**. None of this is payroll or tax advice: a real
+checked. Checked on **16 and 17 September 2026**; Germany and Spain on **23 October 2026**; the German and Spanish pay-gap costs (W15) on **6 November 2026**. None of this is payroll or tax advice: a real
 budget takes its rates from the payroll provider.
 
 **Status key**
@@ -39,10 +39,10 @@ revaluation of the TFR fund (see [method](method.md#simplifications)).
 
 The model checks W11 on the Reconciliation sheet: no Polish full-time salary may fall below it.
 
-## Germany (2026) - simulator and calculator only
+## Germany (2026)
 
-The sample company has no German staff; these rules serve the employer-cost calculator and a client's own staff
-in the [simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/).
+These rules price the Munich entity, and a client's own staff in the employer-cost calculator and the
+[simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/).
 
 | # | Rule used | Value | Source | Status |
 |---|---|---|---|---|
@@ -52,7 +52,7 @@ in the [simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/).
 | W25 | Insolvency levy (U3) and maternity levy (U2), on pay up to the pension ceiling. U2 varies by insurer; U1 applies only to employers with up to 30 staff and is left out | 0.15% and 0.44% | [Techniker Krankenkasse](https://www.tk.de/firmenkunden/versicherung/beitraege-faq/beitragssaetze/aktuelle-beitragssaetze-in-der-sozialversicherung-2031554) | U3 primary; U2 illustrative |
 | W26 | Accident insurance (Berufsgenossenschaft): average contribution of the trade associations in 2025, per €100 of payroll. The real rate depends on the sector's risk class | 1.08% | [DGUV, figures for 2025](https://dguv.de/de/mediencenter/pm/zahlen-2025.jsp) | Illustrative |
 
-## Spain (2026) - simulator and calculator only
+## Spain (2026)
 
 | # | Rule used | Value | Source | Status |
 |---|---|---|---|---|
@@ -71,7 +71,7 @@ Spanish minimum bases by professional group and the extra payments' prorating ar
 |---|---|---|---|
 | W13 | Employers with 250 or more workers report on the previous calendar year by 7 June 2027, then every year | Directive (EU) 2023/970, Art. 9(2); register entry V08 of [pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit/blob/main/docs/verification.md) | Primary |
 | W14 | A category gap of at least 5% that is neither justified nor remedied within six months of reporting leads to a joint pay assessment | Art. 10(1); kit register V11 | Primary |
-| W15 | Upper-bound annual cost of closing the flagged category gaps: €512,476.52 in Italy, €674,086.32 in Poland | `tableau/categories.csv` of pay-transparency-readiness-kit at commit [`95cdf8e`](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit/blob/95cdf8e/tableau/categories.csv), summed by country | Recomputed |
+| W15 | Upper-bound annual cost of closing the flagged category gaps: €512,476.52 in Italy, €674,086.32 in Poland, €254,265.13 in Germany, €472,873.79 in Spain | `tableau/categories.csv` of pay-transparency-readiness-kit at commit [`95cdf8e`](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit/blob/95cdf8e/tableau/categories.csv), summed by country | Recomputed |
 
 ## Company assumptions
 
@@ -83,7 +83,7 @@ sheet, and marked there in yellow where they move the result most.
 | W16 | Target bonus by level, paid at target | 0% to 20% (as in the kit) | Illustrative |
 | W17 | FY2026 budget: FTE growth by department over the year | 0% to 6% | Illustrative |
 | W18 | FY2027 growth by department | 0% to 5% | Illustrative |
-| W19 | Pay review from January 2027 | 2.5% Italy, 5.0% Poland | Illustrative |
+| W19 | Pay review from January 2027 | 2.5% Italy, 5.0% Poland, 3.0% Germany and Spain | Illustrative |
 | W20 | Share of leavers replaced, and months until the backfill starts | 90%, 2 months | Illustrative |
-| W21 | External recruitment and onboarding cost per hire | €4,000 Italy, €2,500 Poland | Illustrative |
+| W21 | External recruitment and onboarding cost per hire | €4,000 Italy, €2,500 Poland, €5,000 Germany, €3,000 Spain | Illustrative |
 | W32 | Starting values offered for a client's own staff in the simulator: leavers 12% a year, growth 2%, pay review 3% in Germany and Spain, cost per hire €5,000 in Germany and €3,000 in Spain | as stated | Illustrative, editable on the page |

@@ -105,14 +105,14 @@ forecast, and the remainder, which is the lower cost per FTE of the June 2026 wo
 
 A third engine runs in the browser: the [scenario simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/)
 recomputes `forecast()` and `summary()` for any choice of levers, and what one employee costs in four countries
-(`src/employer_cost.py`). `tests/js/check_engine.mjs` compares it with the model on 9,679 values (twelve scenarios,
+(`src/employer_cost.py`). `tests/js/check_engine.mjs` compares it with the model on 18,919 values (twelve scenarios,
 68 pay levels around every ceiling, a client-like roster) in CI.
 
 - The pandas model and the workbook are built from the same `config.py`. The workbook holds no
   pasted results except the Python column of the Reconciliation sheet.
 - The Reconciliation sheet compares Python and formula values for every entity × department
   × month of the actuals, the budget, the variance, the drivers, each scenario, the Scenarios
-  summary, the Dashboard and a sample of employees: 570 checks. A value matches within
+  summary, the Dashboard, a sample of employees and each country's total cost: 1086 checks. A value matches within
   1 part in 10⁹. The sheet also counts Polish salaries below the minimum wage (none).
 - `openpyxl` writes formulas without results. CI recalculates the whole workbook with
   LibreOffice and [`check_workbook.py`](../src/check_workbook.py) fails on any mismatch and on
