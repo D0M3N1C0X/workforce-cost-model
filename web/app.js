@@ -1,7 +1,8 @@
 // The simulator's page: levers in, FY2027 out, scenarios saved and compared, one employee's cost in four countries.
 // The calculations are in engine.js, verified against the Python model on every change; this file only moves data
 // between the user and them. Nothing here talks to a server: inputs.json comes from this same page.
-import { employerItems, employerTotal, cellsFromRoster, forecast, summary, monthly, number } from "./engine.js";
+import { employerItems, employerTotal, cellsFromRoster, forecast, summary, monthly, number, outlook, plan, outlookSummary }
+  from "./engine.js";
 import { createI18n } from "./design/i18n.js";
 import { readTable, matchColumns, applyMapping, savedMapping, rememberMapping, download, normalise } from "./design/table.js";
 import { writeXlsx } from "./design/xlsx.js";
@@ -12,7 +13,7 @@ const R = CFG.rules;
 const UI = {
   en: {
     brand: "Workforce Cost Model", eyebrow: "People budget · FY2027", title: "What will next year's people cost be?",
-    lead: "Move the levers - leavers, backfills, growth, a hiring freeze, the pay review, closing pay gaps - and see FY2027 cost, month by month, with the sentence for the CFO. On the sample company or on your own staff.",
+    lead: "Move the levers - leavers, backfills, growth, a hiring freeze, the pay review, collective renewals, the zloty, closing pay gaps - and see FY2027 cost, month by month, with the sentence for the CFO; then the outlook after the closed months and the hires a headcount target takes. On the sample company or on your own staff.",
     privacy: "Your staff file stays on this computer: the calculations run in this page and nothing is sent anywhere. You can check by going offline once the page has loaded.",
     vistaLabel: "View", vScenari: "Scenarios for FY2027", vCosto: "What one employee costs",
     step1: "Whose staff", datiEsempio: "The sample company: {n} FTE in Milan, Kraków, Munich and Barcelona at 30 June 2026, with the leavers and growth plan of the model. Load your own staff list to run the same scenarios on it.",
@@ -32,6 +33,20 @@ const UI = {
     lTth: "Time to hire", lTthSub: "Months between a leaver and the backfill starting.", mesiN: "{n} months", mese1: "1 month",
     lMeseMerito: "Pay review from", lEquita: "Close pay gaps from",
     lEquitaSub: "Annual pay to add per country, before employer on-costs: the cost ceiling from the pay transparency tool.",
+    lRinnovi: "Collective renewals", lRinnoviSub: "A rise on the whole payroll on top of the pay review, by country, from the month chosen.",
+    da: "from", lCambio: "Zloty to the euro", lCambioSub: "Polish pay is set in zloty: fewer zloty to the euro make it cost more in euro.",
+    vPiano: "Outlook and hiring plan", pianoTitolo: "FY2027 after the closed months, and the hires the plan takes",
+    pianoSubEsempio: "Sample company: July to {m} 2026 have closed. Those actuals are synthetic: more leavers in Customer Service, Tech hiring below plan, pay drifting up in Kraków.",
+    pianoSubCliente: "No month has closed for your staff: the outlook is the base case from today, and the plan's hires start after the time to hire.",
+    obiettiviTitolo: "Headcount wanted at 30 June 2027, against 30 June 2026",
+    pianoNota: "Budget: the base case. Outlook: the closed months, then the base case's rules with the closed months' attrition and the last month's cost per FTE. Plan: the outlook's hires until a search opened now can fill a post, then the same hires each month, enough to land on the target. Hires are counted in FTE.",
+    kpBudget: "FY2027 budget", kpOutlook: "Outlook", kpScarto: "Against budget", kpObiettivo: "Target FTE, June 2027",
+    kpAssMese: "Plan hires a month", kpPiano: "The plan adds",
+    hBudget: "Budget", hOutlook: "Outlook", hScarto: "Variance", hObiettivo: "Target FTE", hFteOutlook: "Outlook FTE, June", hAssMese: "Hires a month",
+    hPianoCosto: "Plan against outlook",
+    frasePiano: "After {m}, FY2027 is heading for {o}, {v} {sopra} budget: headcount {vv} {vol}, cost per FTE {rv} {rate}. Landing on {f} FTE in June 2027 takes {h} hires a month from {da} and adds {x} to payroll.",
+    frasePianoNessuna: "After {m}, FY2027 is heading for {o}, {v} {sopra} budget: headcount {vv} {vol}, cost per FTE {rv} {rate}. Even without hiring, headcount stays at or above the targets: the plan needs no hires.",
+    sopra: "over", sotto: "under", oggi: "today",
     nessuno: "Never", salva: "Save this scenario to compare", salvato: "Saved", nomeNuovo: "My scenario",
     stampaTitolo: "FY2027 people cost", perCfo: "For the CFO", mesi: "Month by month", mCosto: "Cost", mFte: "FTE",
     confronto: "Scenarios side by side", confrontoSub: "The scenario on screen and the ones you saved. Saved scenarios stay on this computer.",
@@ -64,11 +79,12 @@ const UI = {
     footer: "The same calculations as the model's Python pipeline, checked against it on every change. Not payroll or tax advice.",
     memo: "Memo", registro: "Verification register", codice: "Code",
     x_scenari: "Scenarios", x_sintesi: "Summary", x_mesi: "Months", x_costo: "One employee", xMese: "Month", xLeve: "Lever",
-    preset: { Base: "Base", "Hiring freeze": "Hiring freeze", "High attrition": "High attrition", "Pay equity first": "Pay equity first" },
+    preset: { Base: "Base", "Hiring freeze": "Hiring freeze", "High attrition": "High attrition", "Pay equity first": "Pay equity first",
+      "Cost pressure": "Cost pressure" },
   },
   it: {
     brand: "Workforce Cost Model", eyebrow: "Budget del personale · FY2027", title: "Quanto costerà il personale l'anno prossimo?",
-    lead: "Muovi le leve - uscite, sostituzioni, crescita, blocco delle assunzioni, aumenti, chiusura dei divari retributivi - e vedi il costo del FY2027, mese per mese, con la frase per il CFO. Sull'azienda di esempio o sul tuo personale.",
+    lead: "Muovi le leve - uscite, sostituzioni, crescita, blocco delle assunzioni, aumenti, rinnovi contrattuali, lo zloty, chiusura dei divari retributivi - e vedi il costo del FY2027, mese per mese, con la frase per il CFO; poi l'outlook dopo i mesi chiusi e le assunzioni che un obiettivo di organico richiede. Sull'azienda di esempio o sul tuo personale.",
     privacy: "Il file del personale resta su questo computer: i calcoli girano in questa pagina e niente viene inviato. Puoi verificarlo staccando la rete dopo che la pagina si è aperta.",
     vistaLabel: "Vista", vScenari: "Scenari per il FY2027", vCosto: "Quanto costa un dipendente",
     step1: "Di chi è il personale", datiEsempio: "L'azienda di esempio: {n} FTE a Milano, Cracovia, Monaco di Baviera e Barcellona al 30 giugno 2026, con le uscite e il piano di crescita del modello. Carica il tuo elenco del personale per far girare gli stessi scenari.",
@@ -87,6 +103,20 @@ const UI = {
     lBlocco: "Blocco delle assunzioni da", lBloccoSub: "Nessuna assunzione, neanche le sostituzioni, da questo mese.",
     lTth: "Tempo di assunzione", lTthSub: "Mesi tra un'uscita e l'arrivo del sostituto.", mesiN: "{n} mesi", mese1: "1 mese",
     lMeseMerito: "Aumenti da", lEquita: "Chiudere i divari retributivi da",
+    lRinnovi: "Rinnovi contrattuali", lRinnoviSub: "Un aumento su tutta la retribuzione oltre agli aumenti individuali, per paese, dal mese scelto.",
+    da: "da", lCambio: "Zloty per un euro", lCambioSub: "Le retribuzioni polacche sono in zloty: meno zloty per euro le rendono più care in euro.",
+    vPiano: "Outlook e piano assunzioni", pianoTitolo: "Il FY2027 dopo i mesi chiusi, e le assunzioni che il piano richiede",
+    pianoSubEsempio: "Azienda di esempio: da luglio a {m} 2026 i mesi sono chiusi. Quei consuntivi sono sintetici: più uscite nel Customer Service, assunzioni Tech sotto il piano, retribuzioni in crescita a Cracovia.",
+    pianoSubCliente: "Per il tuo personale nessun mese è chiuso: l'outlook è lo scenario base da oggi, e le assunzioni del piano partono dopo il tempo di assunzione.",
+    obiettiviTitolo: "Organico voluto al 30 giugno 2027, rispetto al 30 giugno 2026",
+    pianoNota: "Budget: lo scenario base. Outlook: i mesi chiusi, poi le regole dello scenario base con le uscite dei mesi chiusi e il costo per FTE dell'ultimo mese. Piano: le assunzioni dell'outlook finché una ricerca aperta oggi non può coprire un posto, poi lo stesso numero ogni mese, quanto basta per arrivare all'obiettivo. Le assunzioni sono in FTE.",
+    kpBudget: "Budget FY2027", kpOutlook: "Outlook", kpScarto: "Rispetto al budget", kpObiettivo: "FTE obiettivo, giugno 2027",
+    kpAssMese: "Assunzioni del piano al mese", kpPiano: "Il piano aggiunge",
+    hBudget: "Budget", hOutlook: "Outlook", hScarto: "Scostamento", hObiettivo: "FTE obiettivo", hFteOutlook: "FTE outlook, giugno", hAssMese: "Assunzioni al mese",
+    hPianoCosto: "Piano rispetto all'outlook",
+    frasePiano: "Dopo {m}, il FY2027 va verso {o}, {v} {sopra} il budget: l'organico {vv} {vol}, il costo per FTE {rv} {rate}. Arrivare a {f} FTE a giugno 2027 richiede {h} assunzioni al mese da {da} e aggiunge {x} al costo.",
+    frasePianoNessuna: "Dopo {m}, il FY2027 va verso {o}, {v} {sopra} il budget: l'organico {vv} {vol}, il costo per FTE {rv} {rate}. Anche senza assumere l'organico resta pari o sopra agli obiettivi: il piano non richiede assunzioni.",
+    sopra: "sopra", sotto: "sotto", oggi: "oggi",
     lEquitaSub: "Retribuzione annua da aggiungere per paese, prima degli oneri: il tetto del costo dallo strumento sulla trasparenza retributiva.",
     nessuno: "Mai", salva: "Salva lo scenario per confrontarlo", salvato: "Salvato", nomeNuovo: "Il mio scenario",
     stampaTitolo: "Costo del personale FY2027", perCfo: "Per il CFO", mesi: "Mese per mese", mCosto: "Costo", mFte: "FTE",
@@ -120,7 +150,8 @@ const UI = {
     footer: "Gli stessi calcoli della pipeline Python del modello, verificati a ogni modifica. Non è consulenza paghe o fiscale.",
     memo: "Memo", registro: "Registro delle verifiche", codice: "Codice",
     x_scenari: "Scenari", x_sintesi: "Sintesi", x_mesi: "Mesi", x_costo: "Un dipendente", xMese: "Mese", xLeve: "Leva",
-    preset: { Base: "Base", "Hiring freeze": "Blocco assunzioni", "High attrition": "Più uscite", "Pay equity first": "Prima l'equità" },
+    preset: { Base: "Base", "Hiring freeze": "Blocco assunzioni", "High attrition": "Più uscite", "Pay equity first": "Prima l'equità",
+      "Cost pressure": "Costi in salita" },
   },
 };
 
@@ -178,7 +209,9 @@ function preset(s) {
   return { name: L().preset[s.name] || s.name, attrition_x: s.attrition_x, replacement: s.replacement, growth_x: s.growth_x,
     freeze_from: s.freeze_from, remediation_from: s.remediation_from, time_to_hire: CFG.time_to_hire, merit_month: CFG.merit_month,
     merit: Object.fromEntries(dati.countries.map((c) => [c, dati.merit[c] ?? CFG.client.merit[c]])),
-    remediation: Object.fromEntries(dati.countries.map((c) => [c, dati.remediation[c] ?? 0])) };
+    remediation: Object.fromEntries(dati.countries.map((c) => [c, dati.remediation[c] ?? 0])),
+    renewals: Object.fromEntries(dati.countries.map((c) => [c, [s.renewal ? CFG.renewal[c][0] : 0, CFG.renewal[c][1]]])),
+    eur_pln: s.eur_pln };
 }
 let scenario = preset(CFG.scenarios[0]);
 const chiaveSalvati = () => `strumenti.wcm.scenari.${dati.kind === "sample" ? "sample" : normalise(dati.name)}`;
@@ -188,8 +221,10 @@ function calcola(s) {
   const merit = Object.fromEntries(dati.countries.map((c) => [c, s.merit[c] ?? dati.merit[c] ?? CFG.client.merit[c]]));
   const p = { months: CFG.months, merit, merit_month: s.merit_month, time_to_hire: s.time_to_hire,
     cost_per_hire: Object.fromEntries(dati.countries.map((c) => [c, dati.cost_per_hire[c] ?? CFG.client.cost_per_hire[c]])),
-    remediation: Object.fromEntries(dati.countries.map((c) => [c, s.remediation[c] ?? 0])), loaded_factor: CFG.loaded_factor };
-  const f = forecast(celle(), s, p);
+    remediation: Object.fromEntries(dati.countries.map((c) => [c, s.remediation[c] ?? 0])), loaded_factor: CFG.loaded_factor,
+    eur_pln: CFG.eur_pln, renewal: s.renewals ?? {} };
+  // saved before renewals and the exchange rate were levers: neither moves the cost
+  const f = forecast(celle(), { ...s, renewal: 1, eur_pln: s.eur_pln ?? CFG.eur_pln }, p);
   const rows = summary(f, baseline(), p).sort((x, y) => CFG.countries.indexOf(x.country) - CFG.countries.indexOf(y.country));
   const tot = {};
   for (const r of rows) for (const [k, v] of Object.entries(r)) if (typeof v === "number") tot[k] = (tot[k] || 0) + v;
@@ -211,7 +246,15 @@ function scriviLeve() {
   selectMesi("l-equita", scenario.remediation_from, true);
   $("meriti").innerHTML = dati.countries.map((c) => `<label><span>${esc(L().paesi[c])} %</span><input type="number" data-merito="${c}" step="0.5" min="-10" max="20" value="${Math.round(scenario.merit[c] * 1000) / 10}" aria-label="${esc(`${t("lMeseMerito")} · ${L().paesi[c]}`)}"></label>`).join("");
   $("equita").innerHTML = dati.countries.map((c) => `<label><span>${esc(L().paesi[c])} €</span><input type="number" data-equita="${c}" step="1000" min="0" value="${Math.round(scenario.remediation[c])}" aria-label="${esc(`${t("lEquita")} · ${L().paesi[c]}`)}"></label>`).join("");
-  document.querySelectorAll("[data-merito], [data-equita]").forEach((i) => i.addEventListener("input", leggiLeve));
+  const rin = scenario.renewals ?? {};
+  $("rinnovi").innerHTML = dati.countries.map((c) => {
+    const [rise, month] = rin[c] ?? [0, CFG.renewal[c]?.[1] ?? 7];
+    return `<label><span>${esc(L().paesi[c])} %</span><input type="number" data-rinnovo="${c}" step="0.5" min="0" max="20" value="${Math.round(rise * 1000) / 10}" aria-label="${esc(`${t("lRinnovi")} · ${L().paesi[c]}`)}">
+      <select data-rinnovo-mese="${c}" aria-label="${esc(`${t("lRinnovi")} · ${L().paesi[c]} · ${t("da")}`)}">${Array.from({ length: CFG.months }, (_, k) => `<option value="${k + 1}" ${k + 1 === month ? "selected" : ""}>${esc(t("da"))} ${esc(meseNome(k + 1))}</option>`).join("")}</select></label>`;
+  }).join("");
+  $("leva-cambio").style.display = dati.countries.includes("PL") ? "" : "none";
+  $("l-cambio").value = scenario.eur_pln ?? CFG.eur_pln;
+  document.querySelectorAll("[data-merito], [data-equita], [data-rinnovo], [data-rinnovo-mese]").forEach((i) => i.addEventListener("input", leggiLeve));
   $("preset").innerHTML = CFG.scenarios.map((s, k) => `<button type="button" class="s-btn is-small" data-p="${k}">${esc(L().preset[s.name] || s.name)}</button>`).join("");
   $("preset").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { scenario = preset(CFG.scenarios[b.dataset.p]); scriviLeve(); mostra(); }));
 }
@@ -231,9 +274,16 @@ function leggiLeve() {
     const c = i.dataset.equita, v = scenario.remediation[c] ?? 0;
     return [c, tieni(v, Math.round(v), Number(i.value), Number(i.value))];
   }));
+  scenario.renewals = Object.fromEntries([...document.querySelectorAll("[data-rinnovo]")].map((i) => {
+    const c = i.dataset.rinnovo, [v] = scenario.renewals?.[c] ?? [0];
+    const month = Number(document.querySelector(`[data-rinnovo-mese="${c}"]`).value);
+    return [c, [tieni(v, Math.round(v * 1000) / 10, Number(i.value), Number(i.value) / 100), month]];
+  }));
+  const cambio = Number($("l-cambio").value);
+  scenario.eur_pln = cambio > 0 ? cambio : CFG.eur_pln;
   mostra();
 }
-["nome", "l-uscite", "l-sostituzioni", "l-crescita", "l-tth", "l-blocco", "l-mese-merito", "l-equita"].forEach((id) => $(id).addEventListener("input", leggiLeve));
+["nome", "l-uscite", "l-sostituzioni", "l-crescita", "l-tth", "l-blocco", "l-mese-merito", "l-equita", "l-cambio"].forEach((id) => $(id).addEventListener("input", leggiLeve));
 
 function scriviCliente() {
   $("dati-cliente").style.display = dati.kind === "client" ? "grid" : "none";
@@ -245,7 +295,7 @@ function scriviCliente() {
 }
 ["c-uscite", "c-crescita"].forEach((id) => $(id).addEventListener("input", () => {
   cliente = { attrition: Number($("c-uscite").value), growth: Number($("c-crescita").value) };
-  scriviCliente(); mostra();
+  scriviCliente(); mostra(); mostraPiano();
 }));
 
 // ---- a client's staff file ----------------------------------------------------------------------------------------
@@ -320,7 +370,7 @@ function carica() {
       cost_per_hire: CFG.client.cost_per_hire };
     salvati = store.get(chiaveSalvati(), []);
     scenario = preset(CFG.scenarios[0]);
-    scriviCliente(); scriviLeve(); mostra();
+    scriviCliente(); scriviLeve(); mostra(); scriviObiettivi(); mostraPiano();
   } catch (e) {
     messaggio(e.message);
     $("nome-organico").textContent = ""; drop.classList.remove("is-done");    // the data on screen is still the old one
@@ -331,7 +381,7 @@ $("torna-esempio").addEventListener("click", () => {
   $("nome-organico").textContent = ""; drop.classList.remove("is-done"); $("passo-colonne").style.display = "none"; messaggio("");
   salvati = store.get(chiaveSalvati(), []);
   scenario = preset(CFG.scenarios[0]);
-  scriviCliente(); scriviLeve(); mostra();
+  scriviCliente(); scriviLeve(); mostra(); scriviObiettivi(); mostraPiano();
 });
 
 // ---- results ------------------------------------------------------------------------------------------------------
@@ -428,7 +478,10 @@ $("scarica-xlsx").addEventListener("click", () => {
     [t("lTth"), ...tutti.map((s) => s.time_to_hire)], [t("lMeseMerito"), ...tutti.map((s) => meseNome(s.merit_month))],
     ...dati.countries.map((c) => [`${t("lMeseMerito")} · ${L().paesi[c]} (%)`, ...tutti.map((s) => Math.round((s.merit[c] ?? dati.merit[c] ?? CFG.client.merit[c]) * 1000) / 10)]),
     [t("lEquita"), ...tutti.map((s) => (s.remediation_from ? meseNome(s.remediation_from) : t("nessuno")))],
-    ...dati.countries.map((c) => [`${t("lEquita")} · ${L().paesi[c]} (€)`, ...tutti.map((s) => s.remediation[c] || 0)])];
+    ...dati.countries.map((c) => [`${t("lEquita")} · ${L().paesi[c]} (€)`, ...tutti.map((s) => s.remediation[c] || 0)]),
+    ...dati.countries.map((c) => [`${t("lRinnovi")} · ${L().paesi[c]} (%)`, ...tutti.map((s) => Math.round((s.renewals?.[c]?.[0] ?? 0) * 1000) / 10)]),
+    ...dati.countries.map((c) => [`${t("lRinnovi")} · ${L().paesi[c]} · ${t("da")}`, ...tutti.map((s) => meseNome(s.renewals?.[c]?.[1] ?? CFG.renewal[c][1]))]),
+    ...(dati.countries.includes("PL") ? [[t("lCambio"), ...tutti.map((s) => s.eur_pln ?? CFG.eur_pln)]] : [])];
   if (dati.kind === "client") leve.push([t("cUscite"), cliente.attrition], [t("cCrescita"), cliente.growth]);
   const sintesi = [[t("hScenario"), t("hPaese"), `${t("hBase")} (${nomeBase()})`, t("hVolume"), t("hTariffa"), t("hEquita"), t("hFy27"), t("hFteMedi"), t("hFteFine"), t("hAssunzioni"), t("hCostoAss")],
     ...ris.flatMap(({ s, r }) => [...r.rows.map((x) => ({ ...x, label: L().paesi[x.country] })), { ...r.tot, label: t("hTotale") }].map((x) =>
@@ -476,22 +529,70 @@ function mostraCosto() {
 }
 ["k-ral", "k-bonus", "k-fte"].forEach((id) => $(id).addEventListener("input", mostraCosto));
 
+// ---- the outlook and the headcount plan -----------------------------------------------------------------------
+let obiettivi = { ...CFG.plan_target };
+const reparti = () => [...new Set(celle().map((c) => c.department))];
+function scriviObiettivi() {
+  $("obiettivi").innerHTML = reparti().map((d) => `<label><span>${esc(d)} %</span><input type="number" data-obiettivo="${esc(d)}" step="1" min="-50" max="100" value="${Math.round((obiettivi[d] ?? 0) * 1000) / 10}" aria-label="${esc(`${t("obiettiviTitolo")} · ${d}`)}"></label>`).join("");
+  document.querySelectorAll("[data-obiettivo]").forEach((i) => i.addEventListener("input", () => {
+    obiettivi = { ...obiettivi, [i.dataset.obiettivo]: Number(i.value) / 100 };
+    mostraPiano();
+  }));
+}
+function calcolaPiano() {
+  const base = CFG.scenarios[0];
+  const p = { months: CFG.months, merit_month: CFG.merit_month, time_to_hire: CFG.time_to_hire,
+    merit: Object.fromEntries(dati.countries.map((c) => [c, dati.merit[c] ?? CFG.client.merit[c]])),
+    cost_per_hire: Object.fromEntries(dati.countries.map((c) => [c, dati.cost_per_hire[c] ?? CFG.client.cost_per_hire[c]])),
+    remediation: {}, loaded_factor: CFG.loaded_factor, eur_pln: CFG.eur_pln, renewal: {} };
+  const closed = dati.kind === "sample" ? SAMPLE.closed : [];
+  const budget = forecast(celle(), base, p).months;
+  const ol = outlook(celle(), closed, base, p);
+  const pl = plan(ol, obiettivi, p);
+  const rows = outlookSummary(budget, ol, pl, p).sort((x, y) => CFG.countries.indexOf(x.country) - CFG.countries.indexOf(y.country));
+  const tot = {};
+  for (const r of rows) for (const [k, v] of Object.entries(r)) if (typeof v === "number") tot[k] = (tot[k] || 0) + v;
+  return { rows, tot, ol, pl, hMese: pl.cells.reduce((s, c) => s + c.monthly_hires, 0), primo: pl.cells[0]?.first_month ?? 1 };
+}
+function mostraPiano() {
+  const { rows, tot, ol, pl, hMese, primo } = calcolaPiano();
+  const meseChiuso = ol.k ? new Date(Date.UTC(2026, 5 + ol.k, 1)).toLocaleDateString(i18n.lang === "it" ? "it-IT" : "en-GB", { month: "long", timeZone: "UTC" }) : t("oggi");
+  $("piano-sub").textContent = dati.kind === "sample" ? t("pianoSubEsempio", { m: meseChiuso }) : t("pianoSubCliente");
+  const segno = (x) => `${x > 0 ? "+" : x < 0 ? "−" : ""}${M(Math.abs(x))}`;
+  $("kpi-piano").innerHTML = [[t("kpBudget"), M(tot.budget_payroll), ""], [t("kpOutlook"), M(tot.outlook_payroll), ""],
+    [t("kpScarto"), segno(tot.variance), tot.variance > 0 ? "is-bad" : "is-good"], [t("kpObiettivo"), i18n.number(tot.plan_target, 0), ""],
+    [t("kpAssMese"), i18n.number(hMese, 1), ""], [t("kpPiano"), segno(tot.plan_vs_outlook), ""]]
+    .map(([k, v, c]) => `<div class="s-kpi ${c}"><div class="k">${esc(k)}</div><div class="v" style="font-size:26px">${v}</div></div>`).join("");
+  const args = { m: meseChiuso, o: M(tot.outlook_payroll), v: M(Math.abs(tot.variance)), sopra: tot.variance >= 0 ? t("sopra") : t("sotto"),
+    vv: tot.volume >= 0 ? t("aggiunge") : t("toglie"), vol: M(Math.abs(tot.volume)), rv: tot.rate >= 0 ? t("aggiunge") : t("toglie"),
+    rate: M(Math.abs(tot.rate)), f: i18n.number(tot.plan_target, 0), h: i18n.number(hMese, 1), da: new Date(Date.UTC(2026, 5 + Math.min(primo, CFG.months), 1)).toLocaleDateString(i18n.lang === "it" ? "it-IT" : "en-GB", { month: "long", year: "numeric", timeZone: "UTC" }),
+    x: M(tot.plan_vs_outlook) };
+  $("frase-piano").textContent = t(hMese > 0.05 ? "frasePiano" : "frasePianoNessuna", args);
+  const assMese = (c) => pl.cells.filter((x) => x.country === c).reduce((s, x) => s + x.monthly_hires, 0);
+  const riga = (label, x, h, cls = "") => `<tr class="${cls}"><td class="l">${esc(label)}</td><td>${M(x.budget_payroll)}</td><td><b>${M(x.outlook_payroll)}</b></td><td>${segno(x.variance)}</td><td>${segno(x.volume)}</td><td>${segno(x.rate)}</td><td>${i18n.number(x.plan_target, 0)}</td><td>${i18n.number(x.outlook_closing, 0)}</td><td>${i18n.number(h, 1)}</td><td>${segno(x.plan_vs_outlook)}</td></tr>`;
+  $("tab-piano").innerHTML = `<tr><th class="l">${esc(t("hPaese"))}</th><th>${esc(t("hBudget"))}</th><th>${esc(t("hOutlook"))}</th><th>${esc(t("hScarto"))}</th><th>${esc(t("hVolume"))}</th><th>${esc(t("hTariffa"))}</th><th>${esc(t("hObiettivo"))}</th><th>${esc(t("hFteOutlook"))}</th><th>${esc(t("hAssMese"))}</th><th>${esc(t("hPianoCosto"))}</th></tr>` +
+    rows.map((x) => riga(dati.kind === "sample" ? CFG.entities[x.country] : L().paesi[x.country], x, assMese(x.country))).join("") +
+    (rows.length > 1 ? riga(t("hTotale"), tot, hMese, "tot") : "");
+}
+
 // ---- views --------------------------------------------------------------------------------------------------------
 document.querySelectorAll("#viste button").forEach((b) => b.addEventListener("click", () => {
   document.querySelectorAll("#viste button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   $("vista-scenari").style.display = b.dataset.v === "scenari" ? "block" : "none";
   $("vista-costo").style.display = b.dataset.v === "costo" ? "block" : "none";
-  history.replaceState(null, "", b.dataset.v === "costo" ? "#costo" : location.pathname + location.search);
+  $("vista-piano").style.display = b.dataset.v === "piano" ? "block" : "none";
+  history.replaceState(null, "", b.dataset.v === "scenari" ? location.pathname + location.search : `#${b.dataset.v}`);
 }));
-const daHash = () => document.querySelector(`#viste button[data-v="${location.hash === "#costo" ? "costo" : "scenari"}"]`).click();
+const vistaDaHash = () => (["#costo", "#piano"].includes(location.hash) ? location.hash.slice(1) : "scenari");
+const daHash = () => document.querySelector(`#viste button[data-v="${vistaDaHash()}"]`).click();
 addEventListener("hashchange", daHash);
-if (location.hash === "#costo") daHash();
+if (vistaDaHash() !== "scenari") daHash();
 
 i18n.apply();
 function tutto() {
   const nomeAttuale = scenario.name, preimpostato = CFG.scenarios.find((s) => Object.values(UI).some((u) => u.preset[s.name] === nomeAttuale));
   if (preimpostato) scenario.name = L().preset[preimpostato.name];
-  scriviCliente(); scriviLeve(); mostra(); mostraCosto();
+  scriviCliente(); scriviLeve(); mostra(); mostraCosto(); scriviObiettivi(); mostraPiano();
   if (file) disegnaMappa(false);
 }
 i18n.onChange(tutto);

@@ -1,5 +1,5 @@
 """
-Four SVG charts for the memo, hand-written like the ones in pay-transparency-readiness-kit:
+Five SVG charts for the memo, hand-written like the ones in pay-transparency-readiness-kit:
 validated reference palette, light and dark steps inside each file, a <title> on every mark.
 """
 from html import escape
@@ -69,26 +69,27 @@ def fte_budget_actual(months, budget, actual, title):
     return _svg(W, H, body, title)
 
 
-def variance_bridge(rows, title):
-    """rows: [(entity, budget, volume, mix, rate, actual)] -> one bridge per entity."""
+def variance_bridge(rows, title, subtitle="FY2026 cost against budget, by effect", labels=("Volume", "Mix", "Rate"),
+                    ends=("Budget", "actual")):
+    """rows: [(entity, start, *effects, end)], one effect per label -> one bridge per entity."""
     W, L, R = 720, 150, 90
     band = 36
-    labels = ["Volume", "Mix", "Rate"]
-    H = 100 + len(rows) * (32 + band * 3 + 40) + 4
-    m = max(abs(v) for r in rows for v in r[2:5])
+    n = len(labels)
+    H = 100 + len(rows) * (32 + band * n + 40) + 4
+    m = max(abs(v) for r in rows for v in r[2:2 + n])
     x = _scale(-m, m, L + 40, W - R)
     body = [f'<text x="24" y="34" class="title">{escape(title)}</text>',
-            '<text x="24" y="54">FY2026 cost against budget, by effect</text>',
+            f'<text x="24" y="54">{escape(subtitle)}</text>',
             f'<rect x="{L}" y="66" width="12" height="12" rx="2" fill="var(--up)"/><text x="{L + 18}" y="76">Adds cost</text>',
             f'<rect x="{L + 110}" y="66" width="12" height="12" rx="2" fill="var(--down)"/>'
             f'<text x="{L + 128}" y="76">Saves cost</text>']
     y0 = 100
-    for ent, budget, volume, mix, rate, actual in rows:
+    for ent, start, *effects, end in rows:
         body.append(f'<text x="24" y="{y0 + 4}" class="val" style="font-weight:600">{escape(ent)}</text>')
-        body.append(f'<text x="24" y="{y0 + 22}" class="muted">Budget {m_eur(budget)} → actual {m_eur(actual)}</text>')
+        body.append(f'<text x="24" y="{y0 + 22}" class="muted">{ends[0]} {m_eur(start)} → {ends[1]} {m_eur(end)}</text>')
         top = y0 + 32
-        body.append(f'<line x1="{x(0):.1f}" x2="{x(0):.1f}" y1="{top - 4}" y2="{top + band * 3}" stroke="var(--axis)"/>')
-        for i, (lab, v) in enumerate(zip(labels, (volume, mix, rate))):
+        body.append(f'<line x1="{x(0):.1f}" x2="{x(0):.1f}" y1="{top - 4}" y2="{top + band * n}" stroke="var(--axis)"/>')
+        for i, (lab, v) in enumerate(zip(labels, effects, strict=True)):
             yy = top + i * band
             a, b = sorted((x(0), x(v)))
             colour = "--up" if v > 0 else "--down"
@@ -97,8 +98,8 @@ def variance_bridge(rows, title):
                         f'fill="var({colour})"><title>{escape(ent)} {lab.lower()}: {m_eur(v, 2)}</title></rect>')
             tx, anchor = (b + 6, "start") if v >= 0 else (a - 6, "end")
             body.append(f'<text x="{tx:.1f}" y="{yy + band / 2 + 4}" text-anchor="{anchor}" class="val">'
-                        f'{"+" if v > 0 else "−"}{m_eur(abs(v), 2)}</text>')
-        y0 = top + band * 3 + 40
+                        f'{"+" if round(v, -4) > 0 else "−" if round(v, -4) < 0 else ""}{m_eur(abs(v), 2)}</text>')
+        y0 = top + band * n + 40
     return _svg(W, H, body, title)
 
 

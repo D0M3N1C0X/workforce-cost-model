@@ -35,6 +35,13 @@ def test_readme_quotes_current_figures(out, tmp_path):
         f"recruitment cost to {B.m(high['fy27_hiring_cost'], 2)}",
         f"adds {B.m(equity['fy27_remediation'], 2)}** to FY2027 and {B.m(full_year, 2)} a year after",
         f"reconciled on {n_checks} checks",
+        f"add {B.m(f['cost']['fy27_cost'] - base['fy27_cost'], 2)}**, to {B.m(f['cost']['fy27_cost'])}",
+        f"alone adds {B.m(f['fx_pl'], 2)}",
+        f"heading for {B.m(f['os_all']['outlook_payroll'])}, {B.m(f['os_all']['variance'], 2)} over budget",
+        f"{f['fte_gap']:,.0f} fewer FTE than planned save {B.m(-f['os_all']['volume'], 2)}",
+        f"a higher cost per FTE adds {B.m(f['os_all']['rate'], 2)}",
+        f"takes {f['plan_monthly']:,.0f} hires a month from",
+        f"adds {B.m(f['os_all']['plan_vs_outlook'], 2)} to the outlook's payroll",
     ]
     missing = [e for e in expected if e not in README]
     assert not missing, f"README is out of date: {missing}"

@@ -54,14 +54,23 @@ export function cellsFromRoster(rows, R) {
 
 // ---- FY2027 month by month (model.forecast) -----------------------------------------------------------------------
 // cells: { country, department, fte, rate, attrition (a year), growth (a year) }
-// scenario: { attrition_x, replacement, growth_x, freeze_from, remediation_from }
+// scenario: { attrition_x, replacement, growth_x, freeze_from, remediation_from, renewal (0/1), eur_pln }
 // p: { months, merit: {country}, merit_month, time_to_hire, cost_per_hire: {country}, remediation: {country},
-//      loaded_factor: {country} }
+//      loaded_factor: {country}, eur_pln (the rate pay was priced at), renewal: {country: [rise, from month]} }
+// Polish pay is set in zloty, so its euro cost scales with the exchange rate (model.fx_factor).
+const fxFactor = (country, eurPln, p) => (country === "PL" && eurPln ? p.eur_pln / eurPln : 1);
+const renewalOf = (country, on, p) => {
+  const [rise, month] = (p.renewal && p.renewal[country]) || [0, 0];
+  return on ? [rise, month] : [0, month];
+};
+
 export function forecast(cells, scenario, p) {
   const months = [];
   for (const s of cells) {
     const a = (s.attrition * scenario.attrition_x) / 12;
     const g = s.growth * scenario.growth_x;
+    const fx = fxFactor(s.country, scenario.eur_pln, p);
+    const [rise, riseFrom] = renewalOf(s.country, scenario.renewal, p);
     let prev = s.fte;
     const hist = [];
     for (let m = 1; m <= p.months; m++) {
@@ -70,7 +79,8 @@ export function forecast(cells, scenario, p) {
       const frozen = scenario.freeze_from > 0 && m >= scenario.freeze_from;
       const hires = frozen ? 0 : backfill * scenario.replacement + (s.fte * g) / 12;
       const fte = prev - leavers + hires;
-      const rate = s.rate * (1 + (p.merit[s.country] ?? 0) * (m >= p.merit_month ? 1 : 0));
+      const rate = s.rate * fx * (1 + (p.merit[s.country] ?? 0) * (m >= p.merit_month ? 1 : 0))
+        * (1 + rise * (riseFrom > 0 && m >= riseFrom ? 1 : 0));
       months.push({ country: s.country, department: s.department, month: m, leavers, hires, fte,
         cost: (fte * rate) / 12, hiring_cost: hires * (p.cost_per_hire[s.country] ?? 0) });
       hist.push(leavers);
@@ -82,7 +92,7 @@ export function forecast(cells, scenario, p) {
   for (const c of countries) {
     for (let m = 1; m <= p.months; m++) {
       remediation.push({ country: c, month: m, remediation: scenario.remediation_from > 0 && m >= scenario.remediation_from
-        ? ((p.remediation[c] ?? 0) * p.loaded_factor[c]) / 12 : 0 });
+        ? ((p.remediation[c] ?? 0) * p.loaded_factor[c] * fxFactor(c, scenario.eur_pln, p)) / 12 : 0 });
     }
   }
   return { months, remediation };
@@ -105,6 +115,112 @@ export function summary({ months, remediation }, baseline, p) {
       fy27_payroll: f_cost, fy27_remediation: rem, fy27_cost: f_cost + rem, fy27_hires: sum(fy.map((r) => r.hires)),
       fy27_hiring_cost: sum(fy.map((r) => r.hiring_cost)), bridge_volume: (f_fte - a_fte) * a_rate,
       bridge_rate: (f_rate - a_rate) * f_fte, bridge_remediation: rem };
+  });
+}
+
+// ---- FY2027 after the closed months (model.outlook) ---------------------------------------------------------------
+// closed: [{ country, department, month, fte, leavers, hires, cost }], the months that have closed (none: the base case)
+// base: the base scenario. Attrition becomes the closed months' leavers over FTE, cost per FTE the last month's run-rate.
+export function outlook(cells, closed, base, p) {
+  const k = closed.length ? Math.max(...closed.map((r) => r.month)) : 0;
+  const months = [], out = [];
+  for (const s of cells) {
+    const y = new Map(closed.filter((r) => r.country === s.country && r.department === s.department).map((r) => [r.month, r]));
+    let a, rate0;
+    if (k > 0) {
+      const ys = [...y.values()].sort((u, v) => u.month - v.month);
+      a = sum(ys.map((r) => r.leavers)) / sum(ys.map((r) => r.fte));
+      rate0 = (y.get(k).cost * 12) / y.get(k).fte;
+    } else {
+      a = (s.attrition * base.attrition_x) / 12;
+      rate0 = s.rate;
+    }
+    const g = s.growth * base.growth_x;
+    const merit = p.merit[s.country] ?? 0;
+    out.push({ country: s.country, department: s.department, opening: s.fte, attrition: a, rate0 });
+    let prev = s.fte;
+    const hist = [];
+    for (let m = 1; m <= p.months; m++) {
+      let leavers, hires, fte, cost;
+      if (m <= k) ({ leavers, hires, fte, cost } = y.get(m));
+      else {
+        leavers = prev * a;
+        const backfill = m > p.time_to_hire ? hist[m - 1 - p.time_to_hire] : s.fte * a;
+        hires = backfill * base.replacement + (s.fte * g) / 12;
+        fte = prev - leavers + hires;
+        cost = (fte * ((rate0 * (1 + merit * (m >= p.merit_month ? 1 : 0))) / (1 + merit * (k >= p.merit_month ? 1 : 0)))) / 12;
+      }
+      months.push({ country: s.country, department: s.department, month: m, actual: m <= k, leavers, hires, fte, cost,
+        hiring_cost: hires * (p.cost_per_hire[s.country] ?? 0) });
+      hist.push(leavers);
+      prev = fte;
+    }
+  }
+  return { months, cells: out, k };
+}
+
+// ---- The headcount plan (model.plan) ------------------------------------------------------------------------------
+// targets: { department: change in FTE by June 2027 against June 2026 }. The outlook's hires until a search started
+// now can fill a post, then h a month: h = (target - F x q^n) x a / (1 - q^n), q = 1 - a; none if FTE stays at or above target without hiring.
+export function plan(ol, targets, p) {
+  const k = ol.k, first = k + p.time_to_hire, n = p.months - first;
+  const key = (r) => `${r.country}\u0000${r.department}\u0000${r.month}`;
+  const om = new Map(ol.months.map((r) => [key(r), r]));
+  const months = [], cells = [];
+  for (const c of ol.cells) {
+    const target = c.opening * (1 + (targets[c.department] ?? 0));
+    const a = c.attrition;
+    const fp = first > 0 ? om.get(key({ ...c, month: Math.min(first, p.months) })).fte : c.opening;
+    let h;
+    if (n <= 0) h = 0;
+    else if (a > 0) h = Math.max(0, ((target - fp * (1 - a) ** n) * a) / (1 - (1 - a) ** n));
+    else h = Math.max(0, (target - fp) / n);
+    const merit = p.merit[c.country] ?? 0;
+    cells.push({ country: c.country, department: c.department, target, monthly_hires: h, first_month: first + 1 });
+    let prev = c.opening;
+    for (let m = 1; m <= p.months; m++) {
+      const o = om.get(key({ ...c, month: m }));
+      let leavers, hires, fte, cost;
+      if (m <= first) ({ leavers, hires, fte, cost } = o);
+      else {
+        leavers = prev * a;
+        hires = h;
+        fte = prev - leavers + hires;
+        cost = (fte * ((c.rate0 * (1 + merit * (m >= p.merit_month ? 1 : 0))) / (1 + merit * (k >= p.merit_month ? 1 : 0)))) / 12;
+      }
+      months.push({ country: c.country, department: c.department, month: m, leavers, hires, fte, cost,
+        hiring_cost: hires * (p.cost_per_hire[c.country] ?? 0) });
+      prev = fte;
+    }
+  }
+  return { months, cells };
+}
+
+// ---- Outlook against budget, and what the plan adds (model.outlook_summary) --------------------------------------
+export function outlookSummary(budgetMonths, ol, pl, p) {
+  const countries = [...new Set(ol.cells.map((c) => c.country))];
+  const avgFte = (rows) => {
+    const by = [];
+    for (let m = 1; m <= p.months; m++) by.push(sum(rows.filter((r) => r.month === m).map((r) => r.fte)));
+    return sum(by) / p.months;
+  };
+  const closing = (rows) => sum(rows.filter((r) => r.month === p.months).map((r) => r.fte));
+  return countries.map((c) => {
+    const b = budgetMonths.filter((r) => r.country === c), o = ol.months.filter((r) => r.country === c);
+    const pm = pl.months.filter((r) => r.country === c);
+    const bFte = avgFte(b), oFte = avgFte(o), pFte = avgFte(pm);
+    const bCost = sum(b.map((r) => r.cost)), oCost = sum(o.map((r) => r.cost)), pCost = sum(pm.map((r) => r.cost));
+    const bRate = bCost / bFte, oRate = oCost / oFte;
+    return { country: c, budget_fte: bFte, budget_payroll: bCost, budget_closing: closing(b),
+      budget_hiring_cost: sum(b.map((r) => r.hiring_cost)),
+      ytd_budget: sum(b.filter((r) => r.month <= ol.k).map((r) => r.cost)),
+      ytd_actual: sum(o.filter((r) => r.month <= ol.k).map((r) => r.cost)),
+      outlook_fte: oFte, outlook_payroll: oCost, outlook_closing: closing(o),
+      outlook_hiring_cost: sum(o.map((r) => r.hiring_cost)),
+      variance: oCost - bCost, volume: (oFte - bFte) * bRate, rate: (oRate - bRate) * oFte,
+      plan_target: sum(pl.cells.filter((r) => r.country === c).map((r) => r.target)), plan_closing: closing(pm),
+      plan_fte: pFte, plan_hires: sum(pm.map((r) => r.hires)), plan_hiring_cost: sum(pm.map((r) => r.hiring_cost)),
+      plan_payroll: pCost, plan_vs_outlook: pCost - oCost };
   });
 }
 

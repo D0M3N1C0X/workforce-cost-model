@@ -128,8 +128,9 @@ class Model:
     # ------------------------------------------------------------------------------------------
     def build(self, path: Path):
         wb = self.wb
-        names = ["Cover", "Dashboard", "Scenarios", "Variance FY26", "Actuals FY26", "Budget FY26",
-                 "Drivers FY27", *self.sheet_of.values(), "Roster", "Settings", "Reconciliation"]
+        names = ["Cover", "Dashboard", "Scenarios", "Outlook vs budget", "Variance FY26", "Actuals FY26",
+                 "Budget FY26", "Drivers FY27", *self.sheet_of.values(), "Actuals FY27", "Outlook FY27", "Plan FY27",
+                 "Roster", "Settings", "Reconciliation"]
         wb.active.title = names[0]
         for n in names[1:]:
             wb.create_sheet(n)
@@ -141,6 +142,10 @@ class Model:
         self.drivers(wb["Drivers FY27"])
         for i, s in enumerate(C.SCENARIOS):
             self.forecast(wb[self.sheet_of[s[0]]], i, s)
+        self.ytd_sheet(wb["Actuals FY27"])
+        self.outlook(wb["Outlook FY27"])
+        self.plan(wb["Plan FY27"])
+        self.outlook_summary(wb["Outlook vs budget"])
         self.scenarios(wb["Scenarios"])
         self.dashboard(wb["Dashboard"])
         self.reconciliation(wb["Reconciliation"])
@@ -185,6 +190,9 @@ class Model:
         line("opening", "Opening date (FY2026 budget population)", f"=C{r - 1}-1", DATE, formula=True)
         line("closing", "Closing date (FY2027 starting population)", f"=EOMONTH(C{r - 2},{C.MONTHS - 1})", DATE,
              formula=True)
+        self.ylast = 4 + max(len(self.o["ytd"]), 1)
+        line("ytd_k", "Months of FY2027 closed", f"=MAX('Actuals FY27'!$C$5:$C${self.ylast})", "0",
+             "Counted from the 'Actuals FY27' sheet: add a month there and the outlook rolls forward.", formula=True)
 
         section("Italy: employer costs")
         line("it_ivs", "INPS pension contribution (IVS), employer share", C.IT_IVS, PCT,
@@ -256,17 +264,21 @@ class Model:
         self.refs["targets"] = f"Settings!$C${first}:$C${r - 1}"
 
         section("Growth by department (net, over the year)")
-        header(ws, r, ["Department", "FY2026 budget", "FY2027 forecast"], start=2, height=18)
+        header(ws, r, ["Department", "FY2026 budget", "FY2027 forecast", "Plan: June 2027"], start=2, height=30)
         r += 1
         first = r
         for d in C.DEPARTMENTS:
             put(ws, f"B{r}", d, color=BLUE)
             put(ws, f"C{r}", C.BUDGET_GROWTH[d], color=BLUE, fmt=PCT1)
             put(ws, f"D{r}", C.FORECAST_GROWTH[d], color=BLUE, fmt=PCT1, fill=YELLOW)
+            put(ws, f"E{r}", C.PLAN_TARGET[d], color=BLUE, fmt=PCT1, fill=YELLOW)
             r += 1
         self.refs["depts"] = f"Settings!$B${first}:$B${r - 1}"
         self.refs["growth26"] = f"Settings!$C${first}:$C${r - 1}"
         self.refs["growth27"] = f"Settings!$D${first}:$D${r - 1}"
+        self.refs["plan_target"] = f"Settings!$E${first}:$E${r - 1}"
+        put(ws, f"H{first}", "Plan: the FTE the business wants at 30 June 2027 against 30 June 2026 (illustrative).",
+            color=MUTED, italic=True)
 
         section("FY2027 by entity")
         header(ws, r, ["Entity", "Pay review", "Cost per hire", "Remediation (€ a year)", "On-cost factor"],
@@ -297,21 +309,36 @@ class Model:
         line("merit_month", "Pay review effective from month (1 = July)", C.MERIT_MONTH, "0")
         line("tth", "Time to hire, months", C.TIME_TO_HIRE, "0")
 
+        section("Collective renewals (in scenarios that switch them on)")
+        header(ws, r, ["Entity", "Rise", "From month"], start=2, height=18)
+        r += 1
+        first = r
+        for c, (rise, month) in C.RENEWAL.items():
+            put(ws, f"B{r}", c, color=BLUE)
+            put(ws, f"C{r}", rise, color=BLUE, fmt=PCT1, fill=YELLOW)
+            put(ws, f"D{r}", month, color=BLUE, fmt="0")
+            r += 1
+        for key, letter in (("ren_ent", "B"), ("ren_rise", "C"), ("ren_month", "D")):
+            self.refs[key] = f"Settings!${letter}${first}:${letter}${r - 1}"
+        put(ws, f"H{first}", "On top of the pay review. Illustrative: Italy's CCNL Terziario tranche of November "
+                             "2026 and a January round in Germany and Spain, as a share of the whole payroll.",
+            color=MUTED, italic=True)
+
         section("Scenarios")
         header(ws, r, ["Scenario", "Attrition x", "Replacement", "Growth x", "Freeze from month",
-                       "Remediation from month"], start=2, height=30)
+                       "Remediation from month", "Renewals (1 = on)", "EUR/PLN"], start=2, height=30)
         r += 1
         first = r
         for s in C.SCENARIOS:
             put(ws, f"B{r}", s[0], color=BLUE)
-            for j, (v, fmt) in enumerate(zip(s[1:], ["0.00", PCT1, "0.00", "0", "0"])):
+            for j, (v, fmt) in enumerate(zip(s[1:], ["0.00", PCT1, "0.00", "0", "0", "0", "0.0000"], strict=True)):
                 put(ws, f"{col(3 + j)}{r}", v, color=BLUE, fmt=fmt, fill=YELLOW)
             r += 1
         self.refs["scen_first"] = first
         self.refs["scen_names"] = f"Settings!$B${first}:$B${r - 1}"
-        put(ws, f"H{first}", "Freeze and remediation months: 0 means never. Month 4 = October 2026, month 7 = January 2027.",
-            color=MUTED, italic=True)
-        r += 1
+        put(ws, f"B{r}", "Freeze and remediation months: 0 means never. Month 4 = October 2026, month 7 = January 2027. "
+                         "EUR/PLN prices Polish pay, set in zloty.", color=MUTED, italic=True)
+        r += 2
         put(ws, f"B{r}", "Scenario shown on the Dashboard", bold=True)
         put(ws, f"C{r}", C.SCENARIOS[0][0], color=BLUE, fill=YELLOW)
         dv = DataValidation(type="list", formula1=f"={self.refs['scen_names']}")
@@ -554,18 +581,21 @@ class Model:
         title(ws, f"FY2027 forecast: {name}",
               "FTE(m) = FTE(m-1) - leavers + hires. Leavers = FTE(m-1) x monthly attrition. Hires = backfills of leavers "
               "from 'time to hire' months earlier x replacement, plus planned growth; none after a hiring freeze.")
-        widths(ws, {"A": 8, "B": 18, "C": 12, "D": 11, **{col(k2): 10 for k2 in range(5, 22)}})
-        params = ["Attrition x", "Replacement", "Growth x", "Freeze from month", "Remediation from month"]
+        widths(ws, {"A": 8, "B": 18, "C": 12, "D": 11, **{col(k2): 10 for k2 in range(5, 25)}})
+        params = ["Attrition x", "Replacement", "Growth x", "Freeze from month", "Remediation from month",
+                  "Renewals", "EUR/PLN"]
         for j, p in enumerate(params):
             put(ws, f"{col(5 + 2 * j)}3", p, bold=True)
             put(ws, f"{col(6 + 2 * j)}3", f"=Settings!{col(3 + j)}{s_row}", color=GREEN)
-        att_x, repl, growth_x, freeze, rem_from = (f"${col(6 + 2 * j)}$3" for j in range(5))
+        att_x, repl, growth_x, freeze, rem_from, renew, eur_pln = (f"${col(6 + 2 * j)}$3" for j in range(7))
+        fx = self.refs["fx"]
         months = [col(k2) for k2 in range(5, 17)]          # E..P
         put(ws, "D5", 0, bold=True, align="right")
         for j, a in enumerate(months, start=1):
             put(ws, f"{a}5", j, bold=True, align="right")
         header(ws, 6, ["Entity", "Department", "Line", "Opening"] + [f"M{j}" for j in range(1, 13)]
-               + ["FY total / avg", "Monthly attrition", "Monthly growth", "Cost per FTE", "Pay review"])
+               + ["FY total / avg", "Monthly attrition", "Monthly growth", "Cost per FTE", "Pay review", "FX factor",
+                  "Renewal", "Renewal from month"])
         f, rem = self.o["forecasts"][name]
         fi = f.set_index(["country", "department", "month"]).sort_index()
         tth, mm = self.refs["tth"], self.refs["merit_month"]
@@ -584,6 +614,10 @@ class Model:
             put(ws, f"S{fr}", f"='Drivers FY27'!H{drv}*{growth_x}", fmt=PCT1)
             put(ws, f"T{fr}", f"='Drivers FY27'!D{drv}", color=GREEN, fmt=EUR)
             put(ws, f"U{fr}", f"='Drivers FY27'!I{drv}", color=GREEN, fmt=PCT1)
+            put(ws, f"V{fr}", f'=IF($A{fr}="PL",{fx}/{eur_pln},1)', fmt="0.0000")
+            put(ws, f"W{fr}", f"=INDEX({self.refs['ren_rise']},MATCH($A{fr},{self.refs['ren_ent']},0))*{renew}",
+                fmt=PCT1)
+            put(ws, f"X{fr}", f"=INDEX({self.refs['ren_month']},MATCH($A{fr},{self.refs['ren_ent']},0))", fmt="0")
             prev = "D"
             for a in months:
                 # Backfills look only at earlier months' leavers: a range reaching the current or later
@@ -594,7 +628,8 @@ class Model:
                                      f"IF({a}$5>{tth},INDEX($E{lr}:{earlier}{lr},{a}$5-{tth}),$D{fr}*$R{fr})*{repl}"
                                      f"+$D{fr}*$S{fr}/12)"), fmt=FTE)
                 put(ws, f"{a}{fr}", f"={prev}{fr}-{a}{lr}+{a}{hr}", fmt=FTE, bold=True)
-                put(ws, f"{a}{cr}", f"={a}{fr}*($T{fr}*(1+IF({a}$5>={mm},$U{fr},0)))/12", fmt=EURK)
+                put(ws, f"{a}{cr}", (f"={a}{fr}*($T{fr}*$V{fr}*(1+IF({a}$5>={mm},$U{fr},0))"
+                                     f"*(1+IF(AND($X{fr}>0,{a}$5>=$X{fr}),$W{fr},0)))/12"), fmt=EURK)
                 put(ws, f"{a}{kr}", f"={a}{hr}*'Drivers FY27'!$J${drv}", fmt=EURK)
                 prev = a
             put(ws, f"Q{fr}", f"=AVERAGE(E{fr}:P{fr})", fmt=FTE, bold=True)
@@ -627,8 +662,10 @@ class Model:
                 put(ws, f"{a}{tf}", "=" + "+".join(f"{a}{x}" for x in fr_list), fmt=FTE, bold=True, fill=BAND_FILL)
             for a in months:
                 put(ws, f"{a}{tc}", "=" + "+".join(f"{a}{x}" for x in cr_list), fmt=EURK, fill=BAND_FILL)
+                fx_cty = f"*({fx}/{eur_pln})" if cty == "PL" else ""
                 put(ws, f"{a}{tr}", (f"=IF(AND({rem_from}>0,{a}$5>={rem_from}),"
-                                     f"INDEX({self.refs['rem']},{ent_row})*INDEX({self.refs['factor']},{ent_row})/12,0)"),
+                                     f"INDEX({self.refs['rem']},{ent_row})*INDEX({self.refs['factor']},{ent_row})"
+                                     f"{fx_cty}/12,0)"),
                     fmt=EURK, fill=BAND_FILL)
                 put(ws, f"{a}{tk}", "=" + "+".join(f"{a}{x}" for x in kr_list), fmt=EURK, fill=BAND_FILL)
                 put(ws, f"{a}{th}", "=" + "+".join(f"{a}{x}" for x in hr_list), fmt=FTE, fill=BAND_FILL)
@@ -638,9 +675,306 @@ class Model:
             self.fc_tot[(name, cty)] = {"fte_avg": f"'{ws.title}'!Q{tf}", "closing": f"'{ws.title}'!P{tf}",
                                         "payroll": f"'{ws.title}'!Q{tc}", "remediation": f"'{ws.title}'!Q{tr}",
                                         "hiring": f"'{ws.title}'!Q{tk}", "hires": f"'{ws.title}'!Q{th}",
-                                        "sheet": ws.title, "fte_row": tf}
+                                        "sheet": ws.title, "fte_row": tf, "pay_row": tc}
             row += 6
         ws.freeze_panes = "E7"
+
+    def ya(self, letter):
+        return f"'Actuals FY27'!${letter}$5:${letter}${self.ylast}"
+
+    def ytd_sheet(self, ws):
+        title(ws, "FY2027 actuals so far (SYNTHETIC)",
+              "The closed months as a payroll extract would give them: month-end FTE, leavers and hires in the month, "
+              "payroll cost. Invented for the demonstration by src/ytd.py, with drivers that depart from the plan.")
+        widths(ws, {"A": 8, "B": 18, "C": 8, "D": 12, "E": 12, "F": 12, "G": 16})
+        header(ws, 4, ["Entity", "Department", "Month", "FTE", "Leavers", "Hires", "Payroll cost"], height=20)
+        y = self.o["ytd"]
+        row = 5
+        for v in y.itertuples(index=False):
+            put(ws, f"A{row}", v.country, color=BLUE)
+            put(ws, f"B{row}", v.department, color=BLUE)
+            put(ws, f"C{row}", v.month, color=BLUE, fmt="0")
+            for letter, x in (("D", v.fte), ("E", v.leavers), ("F", v.hires)):
+                put(ws, f"{letter}{row}", x, color=BLUE, fmt=FTE)
+            put(ws, f"G{row}", v.cost, color=BLUE, fmt=EUR)
+            row += 1
+        row = self.ylast + 2
+        put(ws, f"B{row}", "Total", bold=True)
+        for letter, key, fmt in (("D", "fte", FTE), ("E", "leavers", FTE), ("F", "hires", FTE), ("G", "cost", EUR)):
+            put(ws, f"{letter}{row}", f"=SUM({letter}5:{letter}{self.ylast})", fmt=fmt, bold=True)
+            self.check("Actuals FY27", f"Total {key}, closed months", y[key].sum(), f"'Actuals FY27'!{letter}{row}")
+        ws.freeze_panes = "A5"
+
+    def outlook(self, ws):
+        title(ws, "FY2027 outlook: actuals so far, then the re-forecast",
+              "Closed months come from 'Actuals FY27'. Then the base case's rules from where the year has got to: "
+              "the closed months' attrition (leavers over FTE, a month) and the last closed month's cost per FTE, "
+              "still due the pay review if it has not started.")
+        widths(ws, {"A": 8, "B": 18, "C": 12, "D": 11, **{col(k2): 10 for k2 in range(5, 23)}})
+        base = self.refs["scen_first"]
+        for j, (label, ref) in enumerate((("Months closed", self.refs["ytd_k"]), ("Attrition x", f"Settings!C{base}"),
+                                          ("Replacement", f"Settings!D{base}"), ("Growth x", f"Settings!E{base}"))):
+            put(ws, f"{col(5 + 2 * j)}3", label, bold=True)
+            put(ws, f"{col(6 + 2 * j)}3", f"={ref}", color=GREEN)
+        kk, att_x, repl, growth_x = "$F$3", "$H$3", "$J$3", "$L$3"
+        months = [col(k2) for k2 in range(5, 17)]
+        put(ws, "D5", 0, bold=True, align="right")
+        for j, a in enumerate(months, start=1):
+            put(ws, f"{a}4", f'=IF({a}$5<={kk},"Actual","Forecast")', color=MUTED, italic=True, align="right")
+            put(ws, f"{a}5", j, bold=True, align="right")
+        header(ws, 6, ["Entity", "Department", "Line", "Opening"] + [f"M{j}" for j in range(1, 13)]
+               + ["FY total / avg", "Monthly attrition", "Monthly growth", "Cost per FTE (run-rate)", "Pay review",
+                  "Cost per hire"])
+        om = self.o["outlook"].set_index(["country", "department", "month"]).sort_index()
+        oc = self.o["outlook_cells"].set_index(["country", "department"])
+        k = int(self.o["ytd"]["month"].max()) if len(self.o["ytd"]) else 0
+        tth, mm = self.refs["tth"], self.refs["merit_month"]
+        self.ol_rows, self.ol_tot = {}, {}
+        blocks = {c: [] for c in C.ENTITIES}
+        row = 7
+        for cty, d in self.cells:
+            drv = self.drv_rows[(cty, d)]
+            fr, lr, hr, cr, kr = row, row + 1, row + 2, row + 3, row + 4
+            self.ol_rows[(cty, d)] = (fr, lr, hr, cr, kr)
+            blocks[cty].append((fr, lr, hr, cr, kr))
+            for rr, label in zip((fr, lr, hr, cr, kr), ("FTE", "Leavers", "Hires", "Payroll cost", "Hiring cost")):
+                put(ws, f"A{rr}", cty, color=BLUE)
+                put(ws, f"B{rr}", d, color=BLUE)
+                put(ws, f"C{rr}", label, bold=label == "FTE")
+            crit = f"{self.ya('A')},$A{fr},{self.ya('B')},$B{fr}"
+            put(ws, f"D{fr}", f"='Drivers FY27'!C{drv}", color=GREEN, fmt=FTE)
+            put(ws, f"R{fr}", (f"=IF({kk}>0,SUMIFS({self.ya('E')},{crit})/SUMIFS({self.ya('D')},{crit}),"
+                               f"'Drivers FY27'!G{drv}*{att_x}/12)"), fmt="0.000%")
+            put(ws, f"S{fr}", f"='Drivers FY27'!H{drv}*{growth_x}", fmt=PCT1)
+            put(ws, f"T{fr}", (f"=IF({kk}>0,SUMIFS({self.ya('G')},{crit},{self.ya('C')},{kk})*12"
+                               f"/SUMIFS({self.ya('D')},{crit},{self.ya('C')},{kk}),'Drivers FY27'!D{drv})"), fmt=EUR)
+            put(ws, f"U{fr}", f"='Drivers FY27'!I{drv}", color=GREEN, fmt=PCT1)
+            put(ws, f"V{fr}", f"='Drivers FY27'!J{drv}", color=GREEN, fmt=EUR)
+            prev = "D"
+            for a in months:
+                earlier = "E" if prev == "D" else prev
+                actual = lambda x, a=a: f"SUMIFS({self.ya(x)},{crit},{self.ya('C')},{a}$5)"  # noqa: E731
+                put(ws, f"{a}{lr}", f"=IF({a}$5<={kk},{actual('E')},{prev}{fr}*$R{fr})", fmt=FTE)
+                put(ws, f"{a}{hr}", (f"=IF({a}$5<={kk},{actual('F')},"
+                                     f"IF({a}$5>{tth},INDEX($E{lr}:{earlier}{lr},{a}$5-{tth}),$D{fr}*$R{fr})*{repl}"
+                                     f"+$D{fr}*$S{fr}/12)"), fmt=FTE)
+                put(ws, f"{a}{fr}", f"=IF({a}$5<={kk},{actual('D')},{prev}{fr}-{a}{lr}+{a}{hr})", fmt=FTE, bold=True)
+                put(ws, f"{a}{cr}", (f"=IF({a}$5<={kk},{actual('G')},{a}{fr}*($T{fr}*(1+IF({a}$5>={mm},$U{fr},0))"
+                                     f"/(1+IF({kk}>={mm},$U{fr},0)))/12)"), fmt=EURK)
+                put(ws, f"{a}{kr}", f"={a}{hr}*$V{fr}", fmt=EURK)
+                prev = a
+            put(ws, f"Q{fr}", f"=AVERAGE(E{fr}:P{fr})", fmt=FTE, bold=True)
+            for rr, fmt in ((lr, FTE), (hr, FTE), (cr, EUR), (kr, EUR)):
+                put(ws, f"Q{rr}", f"=SUM(E{rr}:P{rr})", fmt=fmt, bold=True)
+            sh = "'Outlook FY27'"
+            self.check("Outlook FY27", f"{cty} {d} monthly attrition", oc.loc[(cty, d), "attrition"], f"{sh}!R{fr}")
+            self.check("Outlook FY27", f"{cty} {d} cost per FTE (run-rate)", oc.loc[(cty, d), "rate0"], f"{sh}!T{fr}")
+            for j in sorted({1, max(k, 1), min(k + 1, C.MONTHS), C.MONTHS}):
+                self.check("Outlook FY27", f"{cty} {d} month {j} FTE", om.loc[(cty, d, j), "fte"],
+                           f"{sh}!{months[j - 1]}{fr}")
+            self.check("Outlook FY27", f"{cty} {d} payroll cost", om.loc[(cty, d), "cost"].sum(), f"{sh}!Q{cr}")
+            self.check("Outlook FY27", f"{cty} {d} hires", om.loc[(cty, d), "hires"].sum(), f"{sh}!Q{hr}")
+            if (row - 7) // 5 % 2 == 0:
+                for rr in (fr, lr, hr, cr, kr):
+                    for a in ["A", "B", "C", "D"] + months + ["Q"]:
+                        ws[f"{a}{rr}"].fill = BAND_FILL
+            row += 5
+        row += 1
+        for cty in C.ENTITIES:
+            rows = dict(zip(("Total FTE", "Leavers", "Hires", "Payroll cost", "Hiring cost"),
+                            range(row, row + 5)))
+            for (label, rr), j in zip(rows.items(), range(5)):
+                put(ws, f"A{rr}", cty, bold=True)
+                put(ws, f"C{rr}", label, bold=True)
+                cols = ["D"] + months if j == 0 else months
+                for a in cols:
+                    put(ws, f"{a}{rr}", "=" + "+".join(f"{a}{b[j]}" for b in blocks[cty]),
+                        fmt=FTE if j < 3 else EURK, bold=j == 0, fill=BAND_FILL)
+                put(ws, f"Q{rr}", f"=AVERAGE(E{rr}:P{rr})" if j == 0 else f"=SUM(E{rr}:P{rr})",
+                    fmt=FTE if j < 3 else EUR, bold=True, fill=BAND_FILL)
+            self.ol_tot[cty] = {"fte_avg": f"'Outlook FY27'!Q{rows['Total FTE']}",
+                                "closing": f"'Outlook FY27'!P{rows['Total FTE']}",
+                                "payroll": f"'Outlook FY27'!Q{rows['Payroll cost']}",
+                                "hiring": f"'Outlook FY27'!Q{rows['Hiring cost']}",
+                                "fte_row": rows["Total FTE"], "pay_row": rows["Payroll cost"]}
+            row += 6
+        ws.freeze_panes = "E7"
+
+    def plan(self, ws):
+        title(ws, "FY2027 headcount plan: the hires it takes to land on the June 2027 target",
+              "Until a search started now can fill a post, the outlook's hires (already in the pipeline); then the "
+              "same hires each month. With attrition a, q = 1 - a and n months from FTE F: "
+              "hires a month = (target - F x q^n) x a / (1 - q^n), none if the year would close at or above target without hiring.")
+        widths(ws, {"A": 8, "B": 18, "C": 12, "D": 11, **{col(k2): 10 for k2 in range(5, 24)}})
+        for j, (label, ref) in enumerate((("Months closed", "'Outlook FY27'!$F$3"), ("Time to hire", self.refs["tth"]))):
+            put(ws, f"{col(5 + 2 * j)}3", label, bold=True)
+            put(ws, f"{col(6 + 2 * j)}3", f"={ref}", color=GREEN)
+        put(ws, "I3", "First month of plan hires", bold=True)
+        put(ws, "J3", "=F3+H3+1")
+        kk, first_m = "$F$3", "$J$3"
+        months = [col(k2) for k2 in range(5, 17)]
+        put(ws, "D5", 0, bold=True, align="right")
+        for j, a in enumerate(months, start=1):
+            put(ws, f"{a}5", j, bold=True, align="right")
+        header(ws, 6, ["Entity", "Department", "Line", "Opening"] + [f"M{j}" for j in range(1, 13)]
+               + ["FY total / avg", "Monthly attrition", "Target, June 2027", "FTE when plan hires start",
+                  "Months of plan hires", "Plan hires a month", "Cost per hire"])
+        pm = self.o["plan"].set_index(["country", "department", "month"]).sort_index()
+        pc = self.o["plan_cells"].set_index(["country", "department"])
+        mm = self.refs["merit_month"]
+        blocks = {c: [] for c in C.ENTITIES}
+        self.pl_tot = {}
+        row = 7
+        o = "'Outlook FY27'"
+        for cty, d in self.cells:
+            drv = self.drv_rows[(cty, d)]
+            ofr, olr, ohr, ocr, _ = self.ol_rows[(cty, d)]
+            fr, lr, hr, cr, kr = row, row + 1, row + 2, row + 3, row + 4
+            blocks[cty].append((fr, lr, hr, cr, kr))
+            for rr, label in zip((fr, lr, hr, cr, kr), ("FTE", "Leavers", "Hires", "Payroll cost", "Hiring cost")):
+                put(ws, f"A{rr}", cty, color=BLUE)
+                put(ws, f"B{rr}", d, color=BLUE)
+                put(ws, f"C{rr}", label, bold=label == "FTE")
+            put(ws, f"D{fr}", f"='Drivers FY27'!C{drv}", color=GREEN, fmt=FTE)
+            put(ws, f"R{fr}", f"={o}!R{ofr}", color=GREEN, fmt="0.000%")
+            put(ws, f"S{fr}", f"=D{fr}*(1+INDEX({self.refs['plan_target']},MATCH(B{fr},{self.refs['depts']},0)))",
+                fmt=FTE)
+            put(ws, f"T{fr}", f"=IF({first_m}-1>0,INDEX({o}!$E{ofr}:$P{ofr},MIN({first_m}-1,{C.MONTHS})),D{fr})",
+                fmt=FTE)
+            put(ws, f"U{fr}", f"={C.MONTHS}+1-{first_m}", fmt="0")
+            put(ws, f"V{fr}", (f"=IF(U{fr}<=0,0,IF(R{fr}>0,MAX(0,(S{fr}-T{fr}*POWER(1-R{fr},U{fr}))*R{fr}"
+                               f"/(1-POWER(1-R{fr},U{fr}))),MAX(0,(S{fr}-T{fr})/U{fr})))"), fmt="0.00", bold=True)
+            put(ws, f"W{fr}", f"='Drivers FY27'!J{drv}", color=GREEN, fmt=EUR)
+            prev = "D"
+            for a in months:
+                early = f"{a}$5<{first_m}"
+                put(ws, f"{a}{lr}", f"=IF({early},{o}!{a}{olr},{prev}{fr}*$R{fr})", fmt=FTE)
+                put(ws, f"{a}{hr}", f"=IF({early},{o}!{a}{ohr},$V{fr})", fmt=FTE)
+                put(ws, f"{a}{fr}", f"=IF({early},{o}!{a}{ofr},{prev}{fr}-{a}{lr}+{a}{hr})", fmt=FTE, bold=True)
+                put(ws, f"{a}{cr}", (f"=IF({early},{o}!{a}{ocr},{a}{fr}*({o}!$T{ofr}*(1+IF({a}$5>={mm},{o}!$U{ofr},0))"
+                                     f"/(1+IF({kk}>={mm},{o}!$U{ofr},0)))/12)"), fmt=EURK)
+                put(ws, f"{a}{kr}", f"={a}{hr}*$W{fr}", fmt=EURK)
+                prev = a
+            put(ws, f"Q{fr}", f"=AVERAGE(E{fr}:P{fr})", fmt=FTE, bold=True)
+            for rr, fmt in ((lr, FTE), (hr, FTE), (cr, EUR), (kr, EUR)):
+                put(ws, f"Q{rr}", f"=SUM(E{rr}:P{rr})", fmt=fmt, bold=True)
+            sh = "'Plan FY27'"
+            self.check("Plan FY27", f"{cty} {d} target FTE", pc.loc[(cty, d), "target"], f"{sh}!S{fr}")
+            self.check("Plan FY27", f"{cty} {d} plan hires a month", pc.loc[(cty, d), "monthly_hires"], f"{sh}!V{fr}")
+            self.check("Plan FY27", f"{cty} {d} June 2027 FTE", pm.loc[(cty, d, C.MONTHS), "fte"], f"{sh}!P{fr}")
+            self.check("Plan FY27", f"{cty} {d} payroll cost", pm.loc[(cty, d), "cost"].sum(), f"{sh}!Q{cr}")
+            self.check("Plan FY27", f"{cty} {d} hires", pm.loc[(cty, d), "hires"].sum(), f"{sh}!Q{hr}")
+            if (row - 7) // 5 % 2 == 0:
+                for rr in (fr, lr, hr, cr, kr):
+                    for a in ["A", "B", "C", "D"] + months + ["Q"]:
+                        ws[f"{a}{rr}"].fill = BAND_FILL
+            row += 5
+        row += 1
+        for cty in C.ENTITIES:
+            rows = dict(zip(("Total FTE", "Leavers", "Hires", "Payroll cost", "Hiring cost"), range(row, row + 5)))
+            for (label, rr), j in zip(rows.items(), range(5)):
+                put(ws, f"A{rr}", cty, bold=True)
+                put(ws, f"C{rr}", label, bold=True)
+                for a in (["D"] + months if j == 0 else months):
+                    put(ws, f"{a}{rr}", "=" + "+".join(f"{a}{b[j]}" for b in blocks[cty]),
+                        fmt=FTE if j < 3 else EURK, bold=j == 0, fill=BAND_FILL)
+                put(ws, f"Q{rr}", f"=AVERAGE(E{rr}:P{rr})" if j == 0 else f"=SUM(E{rr}:P{rr})",
+                    fmt=FTE if j < 3 else EUR, bold=True, fill=BAND_FILL)
+            tr = row + 5
+            put(ws, f"A{tr}", cty, bold=True)
+            put(ws, f"C{tr}", "Target, June 2027", bold=True)
+            put(ws, f"P{tr}", "=" + "+".join(f"S{b[0]}" for b in blocks[cty]), fmt=FTE, bold=True, fill=BAND_FILL)
+            self.pl_tot[cty] = {"fte_avg": f"'Plan FY27'!Q{rows['Total FTE']}",
+                                "closing": f"'Plan FY27'!P{rows['Total FTE']}",
+                                "payroll": f"'Plan FY27'!Q{rows['Payroll cost']}",
+                                "hiring": f"'Plan FY27'!Q{rows['Hiring cost']}",
+                                "hires": f"'Plan FY27'!Q{rows['Hires']}", "target": f"'Plan FY27'!P{tr}"}
+            row += 7
+        ws.freeze_panes = "E7"
+
+    def outlook_summary(self, ws):
+        k = int(self.o["ytd"]["month"].max()) if len(self.o["ytd"]) else 0
+        title(ws, "FY2027: outlook against budget, and what the headcount plan adds",
+              "Budget: the base case approved in June 2026. Outlook: the closed months' actuals, then the re-forecast. "
+              "Volume at budget cost per FTE, then the change in cost per FTE at outlook FTE.")
+        widths(ws, {"A": 3, "B": 10, **{col(k2): 14 for k2 in range(3, 18)}})
+        kk = self.refs["ytd_k"]
+        put(ws, "B3", "Months closed", bold=True)
+        put(ws, "D3", f"={kk}", color=GREEN, bold=True)
+        heads = ["Entity", "Budget average FTE", "Budget payroll", "Budget closing FTE", "Budget hiring cost",
+                 "Budget, closed months", "Actual, closed months", "Variance so far", "Outlook average FTE",
+                 "Outlook payroll", "Outlook closing FTE", "Outlook hiring cost", "Variance", "Volume", "Rate"]
+        header(ws, 5, heads, start=2, height=44)
+        s = self.o["outlook_summary"].set_index("country")
+        base = C.SCENARIOS[0][0]
+        row = 6
+        for cty in C.ENTITIES:
+            b, o = self.fc_tot[(base, cty)], self.ol_tot[cty]
+            put(ws, f"B{row}", cty, color=BLUE)
+            put(ws, f"C{row}", f"={b['fte_avg']}", color=GREEN, fmt=FTE)
+            put(ws, f"D{row}", f"={b['payroll']}", color=GREEN, fmt=EUR)
+            put(ws, f"E{row}", f"={b['closing']}", color=GREEN, fmt=FTE)
+            put(ws, f"F{row}", f"={b['hiring']}", color=GREEN, fmt=EUR)
+            put(ws, f"G{row}", (f"=SUMPRODUCT('{b['sheet']}'!$E${b['pay_row']}:$P${b['pay_row']}"
+                                f"*('{b['sheet']}'!$E$5:$P$5<={kk}))"), fmt=EUR)
+            put(ws, f"H{row}", (f"=SUMPRODUCT('Outlook FY27'!$E${o['pay_row']}:$P${o['pay_row']}"
+                                f"*('Outlook FY27'!$E$5:$P$5<={kk}))"), fmt=EUR)
+            put(ws, f"I{row}", f"=H{row}-G{row}", fmt=EUR)
+            put(ws, f"J{row}", f"={o['fte_avg']}", color=GREEN, fmt=FTE)
+            put(ws, f"K{row}", f"={o['payroll']}", color=GREEN, fmt=EUR)
+            put(ws, f"L{row}", f"={o['closing']}", color=GREEN, fmt=FTE)
+            put(ws, f"M{row}", f"={o['hiring']}", color=GREEN, fmt=EUR)
+            put(ws, f"N{row}", f"=K{row}-D{row}", fmt=EUR, bold=True)
+            put(ws, f"O{row}", f"=(J{row}-C{row})*(D{row}/C{row})", fmt=EUR)
+            put(ws, f"P{row}", f"=(K{row}/J{row}-D{row}/C{row})*J{row}", fmt=EUR)
+            v = s.loc[cty]
+            for letter, key in (("C", "budget_fte"), ("D", "budget_payroll"), ("E", "budget_closing"),
+                                ("F", "budget_hiring_cost"), ("G", "ytd_budget"), ("H", "ytd_actual"),
+                                ("J", "outlook_fte"), ("K", "outlook_payroll"), ("L", "outlook_closing"),
+                                ("M", "outlook_hiring_cost"), ("N", "variance"), ("O", "volume"), ("P", "rate")):
+                self.check("Outlook vs budget", f"{cty} {key}", v[key], f"'Outlook vs budget'!{letter}{row}")
+            row += 1
+        put(ws, f"B{row}", "All", bold=True)
+        for k2 in range(3, 17):
+            a = col(k2)
+            put(ws, f"{a}{row}", f"=SUM({a}6:{a}{row - 1})", fmt=FTE if a in "CEJL" else EUR, bold=True,
+                fill=BAND_FILL)
+        self.check("Outlook vs budget", "All entities: variance", s["variance"].sum(), f"'Outlook vs budget'!N{row}")
+        put(ws, f"B{row + 1}", f'=IF(ABS(O{row}+P{row}-N{row})<0.01,"Volume + rate = variance","Does not add up")',
+            color=MUTED, italic=True)
+
+        row += 4
+        put(ws, f"B{row - 1}", "The headcount plan", bold=True, size=11)
+        header(ws, row, ["Entity", "Target, June 2027", "Plan closing FTE", "Outlook closing FTE", "Plan average FTE",
+                         "Plan hires (FY)", "Plan hiring cost", "Plan payroll", "Plan against outlook"],
+               start=2, height=44)
+        row += 1
+        top = row
+        for cty in C.ENTITIES:
+            p_, o = self.pl_tot[cty], self.ol_tot[cty]
+            put(ws, f"B{row}", cty, color=BLUE)
+            put(ws, f"C{row}", f"={p_['target']}", color=GREEN, fmt=FTE)
+            put(ws, f"D{row}", f"={p_['closing']}", color=GREEN, fmt=FTE)
+            put(ws, f"E{row}", f"={o['closing']}", color=GREEN, fmt=FTE)
+            put(ws, f"F{row}", f"={p_['fte_avg']}", color=GREEN, fmt=FTE)
+            put(ws, f"G{row}", f"={p_['hires']}", color=GREEN, fmt=FTE)
+            put(ws, f"H{row}", f"={p_['hiring']}", color=GREEN, fmt=EUR)
+            put(ws, f"I{row}", f"={p_['payroll']}", color=GREEN, fmt=EUR)
+            put(ws, f"J{row}", f"=I{row}-'Outlook vs budget'!K{6 + list(C.ENTITIES).index(cty)}", fmt=EUR, bold=True)
+            v = s.loc[cty]
+            for letter, key in (("C", "plan_target"), ("D", "plan_closing"), ("F", "plan_fte"), ("G", "plan_hires"),
+                                ("H", "plan_hiring_cost"), ("I", "plan_payroll"), ("J", "plan_vs_outlook")):
+                self.check("Outlook vs budget", f"{cty} {key}", v[key], f"'Outlook vs budget'!{letter}{row}")
+            row += 1
+        put(ws, f"B{row}", "All", bold=True)
+        for a in "CDEFGHIJ":
+            put(ws, f"{a}{row}", f"=SUM({a}{top}:{a}{row - 1})", fmt=FTE if a in "CDEFG" else EUR, bold=True,
+                fill=BAND_FILL)
+        self.check("Outlook vs budget", "All entities: plan against outlook", s["plan_vs_outlook"].sum(),
+                   f"'Outlook vs budget'!J{row}")
+        put(ws, f"B{row + 2}", f"Closed months: {k}. Plan hires start in month {k + C.TIME_TO_HIRE + 1} "
+                               "(after the time to hire) and are fractional FTE, like every count in the model.",
+            color=MUTED, italic=True)
 
     def scenarios(self, ws):
         title(ws, "FY2027 scenarios against FY2026 actuals",
@@ -833,26 +1167,27 @@ class Model:
     def cover(self, ws, names):
         widths(ws, {"A": 3, "B": 24, "C": 100})
         put(ws, "B2", "Workforce Cost Model", bold=True, size=18)
-        put(ws, "B3", "Italy, Poland, Germany and Spain: FY2026 budget against actual, and FY2027 people cost under "
-                      "four scenarios",
+        put(ws, "B3", "Italy, Poland, Germany and Spain: FY2026 budget against actual, FY2027 people cost under "
+                      f"{len(C.SCENARIOS)} scenarios, the outlook after the closed months and a headcount plan",
             color=MUTED, size=12)
         put(ws, "B5", "What it does", bold=True, size=11)
         lines = [
             "Prices every employee at fully loaded cost: base pay, target bonus, Italian INPS and TFR, Polish ZUS with the 2026 cap, German social insurance and Spanish Seguridad Social with their ceilings.",
             "Rebuilds FY2026 month-end FTE and cost from hire and exit dates, and splits the budget variance into volume, mix and rate.",
             "Forecasts FY2027 month by month from FY2026 attrition, backfills, planned growth and the January pay review.",
-            "Compares four scenarios, including a hiring freeze and closing pay gaps before the first pay-transparency report.",
+            f"Compares {len(C.SCENARIOS)} scenarios, including a hiring freeze, closing pay gaps before the first pay-transparency report, and collective renewals with a stronger zloty.",
+            "Rolls the year forward from the closed months (synthetic actuals): re-forecast, variance against budget, and the monthly hires it takes to land on the June 2027 headcount target.",
         ]
         for i, text in enumerate(lines, start=6):
             put(ws, f"C{i}", text)
-        put(ws, "B11", "How to read it", bold=True, size=11)
+        put(ws, "B12", "How to read it", bold=True, size=11)
         for i, (label, meaning, colour, fill) in enumerate([
             ("Blue text", "an input", BLUE, None), ("Black text", "a formula", INK, None),
             ("Green text", "a link to another sheet", GREEN, None),
-            ("Yellow fill", "a key assumption, including the scenario shown", INK, YELLOW)], start=12):
+            ("Yellow fill", "a key assumption, including the scenario shown", INK, YELLOW)], start=13):
             put(ws, f"B{i}", label, color=colour, fill=fill)
             put(ws, f"C{i}", meaning)
-        put(ws, "B17", "Sheets", bold=True, size=11)
+        put(ws, "B18", "Sheets", bold=True, size=11)
         purpose = {
             "Dashboard": "Headline figures and charts for the scenario selected in Settings.",
             "Scenarios": "Every scenario side by side, with the bridge from FY2026.",
@@ -863,19 +1198,23 @@ class Model:
             "Roster": "One row per employee: inputs in blue, loaded cost in black.",
             "Settings": "Rates, caps, growth, pay review, cost per hire and the scenario table.",
             "Reconciliation": "Each figure checked against the Python pipeline.",
+            "Outlook vs budget": "FY2027 outlook against the approved budget, and what the headcount plan adds.",
+            "Actuals FY27": "The closed months of FY2027 (synthetic), as a payroll extract would give them.",
+            "Outlook FY27": "Closed months, then the re-forecast from the run-rate.",
+            "Plan FY27": "The hires a month it takes to land on the June 2027 headcount target.",
         }
         for s in C.SCENARIOS:
             purpose[self.sheet_of[s[0]]] = f"FY2027 month by month under the '{s[0]}' scenario."
-        for i, n in enumerate(names[1:], start=18):
+        for i, n in enumerate(names[1:], start=19):
             cell = put(ws, f"B{i}", n, color="1F5FA8")
             cell.hyperlink = Hyperlink(ref=cell.coordinate, location=f"'{n}'!A1")
             put(ws, f"C{i}", purpose[n])
-        r = 18 + len(names)
+        r = 19 + len(names)
         put(ws, f"B{r}", "Check", bold=True, size=11)
         put(ws, f"C{r}", f"={self.recon_result}", color=GREEN, bold=True)
         put(ws, f"B{r + 2}", "Data", bold=True, size=11)
         put(ws, f"C{r + 2}", "Synthetic: the four entities of the organisation analysed in hr-people-analytics. "
-                             "Budget, growth, pay review and cost per hire are invented for the demonstration.", wrap=True)
+                             "Budget, growth, pay review, renewals, cost per hire, FY2027 actuals and the plan are invented.", wrap=True)
         ws.row_dimensions[r + 2].height = 28
         put(ws, f"B{r + 3}", "Limits", bold=True, size=11)
         put(ws, f"C{r + 3}", "Month-end population; salaries as at 30 June 2026 for all months; one cap and one exchange "

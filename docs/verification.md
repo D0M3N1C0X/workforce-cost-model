@@ -86,4 +86,8 @@ sheet, and marked there in yellow where they move the result most.
 | W19 | Pay review from January 2027 | 2.5% Italy, 5.0% Poland, 3.0% Germany and Spain | Illustrative |
 | W20 | Share of leavers replaced, and months until the backfill starts | 90%, 2 months | Illustrative |
 | W21 | External recruitment and onboarding cost per hire | €4,000 Italy, €2,500 Poland, €5,000 Germany, €3,000 Spain | Illustrative |
+| W33 | Collective renewals, in scenarios that switch them on | 1.5% Italy from November 2026 (CCNL Terziario tranche, as a share of the whole payroll), 2.0% Germany and 1.0% Spain from January 2027, none in Poland | Illustrative |
+| W34 | EUR/PLN in the Cost pressure scenario | 4.00 (the base rate is W12) | Illustrative |
+| W35 | FY2027 closed months, July to October 2026 | Written by `src/ytd.py`: attrition × 1.5 in Customer Service, × 1.1 in Sales, × 0.85 in Tech; Tech hires 40% of planned growth; cost per FTE +1.2% in Poland, +0.4% in Germany | Synthetic |
+| W36 | Headcount plan, June 2027 against June 2026 | Customer Service −3%, Tech +10%, Sales +5%, other departments flat | Illustrative |
 | W32 | Starting values offered for a client's own staff in the simulator: leavers 12% a year, growth 2%, pay review 3% in Germany and Spain, cost per hire €5,000 in Germany and €3,000 in Spain | as stated | Illustrative, editable on the page |

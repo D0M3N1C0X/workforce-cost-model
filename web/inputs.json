@@ -74,6 +74,33 @@
    "DE": 5000,
    "ES": 3000
   },
+  "eur_pln": 4.2568,
+  "renewal": {
+   "IT": [
+    0.015,
+    5
+   ],
+   "PL": [
+    0.0,
+    7
+   ],
+   "DE": [
+    0.02,
+    7
+   ],
+   "ES": [
+    0.01,
+    7
+   ]
+  },
+  "plan_target": {
+   "Customer Service": -0.03,
+   "Operations": 0.0,
+   "Tech": 0.1,
+   "Sales": 0.05,
+   "Finance": 0.0,
+   "HR": 0.0
+  },
   "loaded_factor": {
    "IT": 1.3721740740740742,
    "PL": 1.2122999999999997,
@@ -87,7 +114,9 @@
     "replacement": 0.9,
     "growth_x": 1.0,
     "freeze_from": 0,
-    "remediation_from": 0
+    "remediation_from": 0,
+    "renewal": 0,
+    "eur_pln": 4.2568
    },
    {
     "name": "Hiring freeze",
@@ -95,7 +124,9 @@
     "replacement": 0.9,
     "growth_x": 0.0,
     "freeze_from": 4,
-    "remediation_from": 0
+    "remediation_from": 0,
+    "renewal": 0,
+    "eur_pln": 4.2568
    },
    {
     "name": "High attrition",
@@ -103,7 +134,9 @@
     "replacement": 0.9,
     "growth_x": 1.0,
     "freeze_from": 0,
-    "remediation_from": 0
+    "remediation_from": 0,
+    "renewal": 0,
+    "eur_pln": 4.2568
    },
    {
     "name": "Pay equity first",
@@ -111,7 +144,19 @@
     "replacement": 0.9,
     "growth_x": 1.0,
     "freeze_from": 0,
-    "remediation_from": 7
+    "remediation_from": 7,
+    "renewal": 0,
+    "eur_pln": 4.2568
+   },
+   {
+    "name": "Cost pressure",
+    "attrition_x": 1.0,
+    "replacement": 0.9,
+    "growth_x": 1.0,
+    "freeze_from": 0,
+    "remediation_from": 0,
+    "renewal": 1,
+    "eur_pln": 4.0
    }
   ],
   "bonus_target": {
@@ -422,6 +467,966 @@
     "bridge_volume": 385743.18517294317,
     "bridge_rate": 284616.7936076596,
     "bridge_remediation": 0.0
+   }
+  ],
+  "closed": [
+   {
+    "country": "IT",
+    "department": "Customer Service",
+    "month": 1,
+    "fte": 305.7,
+    "leavers": 8.0,
+    "hires": 7.7,
+    "cost": 1333343.81
+   },
+   {
+    "country": "IT",
+    "department": "Customer Service",
+    "month": 2,
+    "fte": 305.4,
+    "leavers": 8.0,
+    "hires": 7.7,
+    "cost": 1332035.32
+   },
+   {
+    "country": "IT",
+    "department": "Customer Service",
+    "month": 3,
+    "fte": 305.1,
+    "leavers": 8.0,
+    "hires": 7.7,
+    "cost": 1330726.84
+   },
+   {
+    "country": "IT",
+    "department": "Customer Service",
+    "month": 4,
+    "fte": 304.8,
+    "leavers": 8.0,
+    "hires": 7.7,
+    "cost": 1329418.36
+   },
+   {
+    "country": "IT",
+    "department": "Operations",
+    "month": 1,
+    "fte": 254.5,
+    "leavers": 2.9,
+    "hires": 2.6,
+    "cost": 1217984.9
+   },
+   {
+    "country": "IT",
+    "department": "Operations",
+    "month": 2,
+    "fte": 254.2,
+    "leavers": 2.9,
+    "hires": 2.6,
+    "cost": 1216549.16
+   },
+   {
+    "country": "IT",
+    "department": "Operations",
+    "month": 3,
+    "fte": 253.9,
+    "leavers": 2.9,
+    "hires": 2.6,
+    "cost": 1215113.42
+   },
+   {
+    "country": "IT",
+    "department": "Operations",
+    "month": 4,
+    "fte": 253.6,
+    "leavers": 2.9,
+    "hires": 2.6,
+    "cost": 1213677.69
+   },
+   {
+    "country": "IT",
+    "department": "Tech",
+    "month": 1,
+    "fte": 173.9,
+    "leavers": 1.8,
+    "hires": 1.9,
+    "cost": 1057683.8
+   },
+   {
+    "country": "IT",
+    "department": "Tech",
+    "month": 2,
+    "fte": 174.0,
+    "leavers": 1.8,
+    "hires": 1.9,
+    "cost": 1058292.01
+   },
+   {
+    "country": "IT",
+    "department": "Tech",
+    "month": 3,
+    "fte": 174.1,
+    "leavers": 1.8,
+    "hires": 1.9,
+    "cost": 1058900.22
+   },
+   {
+    "country": "IT",
+    "department": "Tech",
+    "month": 4,
+    "fte": 174.2,
+    "leavers": 1.8,
+    "hires": 1.9,
+    "cost": 1059508.44
+   },
+   {
+    "country": "IT",
+    "department": "Sales",
+    "month": 1,
+    "fte": 121.9,
+    "leavers": 2.0,
+    "hires": 2.1,
+    "cost": 595243.32
+   },
+   {
+    "country": "IT",
+    "department": "Sales",
+    "month": 2,
+    "fte": 122.0,
+    "leavers": 2.0,
+    "hires": 2.1,
+    "cost": 595731.63
+   },
+   {
+    "country": "IT",
+    "department": "Sales",
+    "month": 3,
+    "fte": 122.1,
+    "leavers": 2.0,
+    "hires": 2.1,
+    "cost": 596219.93
+   },
+   {
+    "country": "IT",
+    "department": "Sales",
+    "month": 4,
+    "fte": 122.2,
+    "leavers": 2.0,
+    "hires": 2.1,
+    "cost": 596708.24
+   },
+   {
+    "country": "IT",
+    "department": "Finance",
+    "month": 1,
+    "fte": 103.7,
+    "leavers": 1.3,
+    "hires": 1.2,
+    "cost": 561354.52
+   },
+   {
+    "country": "IT",
+    "department": "Finance",
+    "month": 2,
+    "fte": 103.6,
+    "leavers": 1.3,
+    "hires": 1.2,
+    "cost": 560813.2
+   },
+   {
+    "country": "IT",
+    "department": "Finance",
+    "month": 3,
+    "fte": 103.5,
+    "leavers": 1.3,
+    "hires": 1.2,
+    "cost": 560271.87
+   },
+   {
+    "country": "IT",
+    "department": "Finance",
+    "month": 4,
+    "fte": 103.4,
+    "leavers": 1.3,
+    "hires": 1.2,
+    "cost": 559730.55
+   },
+   {
+    "country": "IT",
+    "department": "HR",
+    "month": 1,
+    "fte": 74.9,
+    "leavers": 1.2,
+    "hires": 1.1,
+    "cost": 354420.25
+   },
+   {
+    "country": "IT",
+    "department": "HR",
+    "month": 2,
+    "fte": 74.8,
+    "leavers": 1.2,
+    "hires": 1.1,
+    "cost": 353947.06
+   },
+   {
+    "country": "IT",
+    "department": "HR",
+    "month": 3,
+    "fte": 74.7,
+    "leavers": 1.2,
+    "hires": 1.1,
+    "cost": 353473.87
+   },
+   {
+    "country": "IT",
+    "department": "HR",
+    "month": 4,
+    "fte": 74.6,
+    "leavers": 1.2,
+    "hires": 1.1,
+    "cost": 353000.68
+   },
+   {
+    "country": "PL",
+    "department": "Customer Service",
+    "month": 1,
+    "fte": 321.0,
+    "leavers": 9.7,
+    "hires": 9.3,
+    "cost": 1019320.26
+   },
+   {
+    "country": "PL",
+    "department": "Customer Service",
+    "month": 2,
+    "fte": 320.6,
+    "leavers": 9.7,
+    "hires": 9.3,
+    "cost": 1018050.08
+   },
+   {
+    "country": "PL",
+    "department": "Customer Service",
+    "month": 3,
+    "fte": 320.3,
+    "leavers": 9.6,
+    "hires": 9.3,
+    "cost": 1017097.44
+   },
+   {
+    "country": "PL",
+    "department": "Customer Service",
+    "month": 4,
+    "fte": 320.0,
+    "leavers": 9.6,
+    "hires": 9.3,
+    "cost": 1016144.81
+   },
+   {
+    "country": "PL",
+    "department": "Operations",
+    "month": 1,
+    "fte": 289.9,
+    "leavers": 3.3,
+    "hires": 3.0,
+    "cost": 951983.64
+   },
+   {
+    "country": "PL",
+    "department": "Operations",
+    "month": 2,
+    "fte": 289.6,
+    "leavers": 3.3,
+    "hires": 3.0,
+    "cost": 950998.49
+   },
+   {
+    "country": "PL",
+    "department": "Operations",
+    "month": 3,
+    "fte": 289.3,
+    "leavers": 3.3,
+    "hires": 3.0,
+    "cost": 950013.34
+   },
+   {
+    "country": "PL",
+    "department": "Operations",
+    "month": 4,
+    "fte": 289.0,
+    "leavers": 3.3,
+    "hires": 3.0,
+    "cost": 949028.19
+   },
+   {
+    "country": "PL",
+    "department": "Tech",
+    "month": 1,
+    "fte": 191.3,
+    "leavers": 2.2,
+    "hires": 2.3,
+    "cost": 862145.45
+   },
+   {
+    "country": "PL",
+    "department": "Tech",
+    "month": 2,
+    "fte": 191.4,
+    "leavers": 2.2,
+    "hires": 2.3,
+    "cost": 862596.13
+   },
+   {
+    "country": "PL",
+    "department": "Tech",
+    "month": 3,
+    "fte": 191.5,
+    "leavers": 2.2,
+    "hires": 2.3,
+    "cost": 863046.81
+   },
+   {
+    "country": "PL",
+    "department": "Tech",
+    "month": 4,
+    "fte": 191.6,
+    "leavers": 2.2,
+    "hires": 2.3,
+    "cost": 863497.48
+   },
+   {
+    "country": "PL",
+    "department": "Sales",
+    "month": 1,
+    "fte": 143.7,
+    "leavers": 2.3,
+    "hires": 2.4,
+    "cost": 488014.2
+   },
+   {
+    "country": "PL",
+    "department": "Sales",
+    "month": 2,
+    "fte": 143.8,
+    "leavers": 2.3,
+    "hires": 2.4,
+    "cost": 488353.81
+   },
+   {
+    "country": "PL",
+    "department": "Sales",
+    "month": 3,
+    "fte": 143.9,
+    "leavers": 2.3,
+    "hires": 2.4,
+    "cost": 488693.41
+   },
+   {
+    "country": "PL",
+    "department": "Sales",
+    "month": 4,
+    "fte": 144.0,
+    "leavers": 2.3,
+    "hires": 2.4,
+    "cost": 489033.02
+   },
+   {
+    "country": "PL",
+    "department": "Finance",
+    "month": 1,
+    "fte": 102.8,
+    "leavers": 1.8,
+    "hires": 1.6,
+    "cost": 396432.39
+   },
+   {
+    "country": "PL",
+    "department": "Finance",
+    "month": 2,
+    "fte": 102.6,
+    "leavers": 1.8,
+    "hires": 1.6,
+    "cost": 395661.12
+   },
+   {
+    "country": "PL",
+    "department": "Finance",
+    "month": 3,
+    "fte": 102.4,
+    "leavers": 1.8,
+    "hires": 1.6,
+    "cost": 394889.85
+   },
+   {
+    "country": "PL",
+    "department": "Finance",
+    "month": 4,
+    "fte": 102.2,
+    "leavers": 1.8,
+    "hires": 1.6,
+    "cost": 394118.58
+   },
+   {
+    "country": "PL",
+    "department": "HR",
+    "month": 1,
+    "fte": 87.1,
+    "leavers": 1.0,
+    "hires": 0.9,
+    "cost": 279250.25
+   },
+   {
+    "country": "PL",
+    "department": "HR",
+    "month": 2,
+    "fte": 87.0,
+    "leavers": 1.0,
+    "hires": 0.9,
+    "cost": 278929.64
+   },
+   {
+    "country": "PL",
+    "department": "HR",
+    "month": 3,
+    "fte": 86.9,
+    "leavers": 1.0,
+    "hires": 0.9,
+    "cost": 278609.03
+   },
+   {
+    "country": "PL",
+    "department": "HR",
+    "month": 4,
+    "fte": 86.8,
+    "leavers": 1.0,
+    "hires": 0.9,
+    "cost": 278288.43
+   },
+   {
+    "country": "DE",
+    "department": "Customer Service",
+    "month": 1,
+    "fte": 206.1,
+    "leavers": 6.4,
+    "hires": 6.1,
+    "cost": 1162555.66
+   },
+   {
+    "country": "DE",
+    "department": "Customer Service",
+    "month": 2,
+    "fte": 205.9,
+    "leavers": 6.3,
+    "hires": 6.1,
+    "cost": 1161427.52
+   },
+   {
+    "country": "DE",
+    "department": "Customer Service",
+    "month": 3,
+    "fte": 205.7,
+    "leavers": 6.3,
+    "hires": 6.1,
+    "cost": 1160299.37
+   },
+   {
+    "country": "DE",
+    "department": "Customer Service",
+    "month": 4,
+    "fte": 205.4,
+    "leavers": 6.3,
+    "hires": 6.0,
+    "cost": 1158607.15
+   },
+   {
+    "country": "DE",
+    "department": "Operations",
+    "month": 1,
+    "fte": 180.6,
+    "leavers": 1.7,
+    "hires": 1.5,
+    "cost": 1102470.39
+   },
+   {
+    "country": "DE",
+    "department": "Operations",
+    "month": 2,
+    "fte": 180.4,
+    "leavers": 1.7,
+    "hires": 1.5,
+    "cost": 1101249.5
+   },
+   {
+    "country": "DE",
+    "department": "Operations",
+    "month": 3,
+    "fte": 180.2,
+    "leavers": 1.7,
+    "hires": 1.5,
+    "cost": 1100028.6
+   },
+   {
+    "country": "DE",
+    "department": "Operations",
+    "month": 4,
+    "fte": 180.0,
+    "leavers": 1.7,
+    "hires": 1.5,
+    "cost": 1098807.7
+   },
+   {
+    "country": "DE",
+    "department": "Tech",
+    "month": 1,
+    "fte": 101.9,
+    "leavers": 0.6,
+    "hires": 0.7,
+    "cost": 803666.2
+   },
+   {
+    "country": "DE",
+    "department": "Tech",
+    "month": 2,
+    "fte": 102.0,
+    "leavers": 0.6,
+    "hires": 0.7,
+    "cost": 804454.88
+   },
+   {
+    "country": "DE",
+    "department": "Tech",
+    "month": 3,
+    "fte": 102.1,
+    "leavers": 0.6,
+    "hires": 0.7,
+    "cost": 805243.56
+   },
+   {
+    "country": "DE",
+    "department": "Tech",
+    "month": 4,
+    "fte": 102.2,
+    "leavers": 0.6,
+    "hires": 0.7,
+    "cost": 806032.24
+   },
+   {
+    "country": "DE",
+    "department": "Sales",
+    "month": 1,
+    "fte": 90.3,
+    "leavers": 0.8,
+    "hires": 0.9,
+    "cost": 546514.69
+   },
+   {
+    "country": "DE",
+    "department": "Sales",
+    "month": 2,
+    "fte": 90.4,
+    "leavers": 0.8,
+    "hires": 0.9,
+    "cost": 547119.91
+   },
+   {
+    "country": "DE",
+    "department": "Sales",
+    "month": 3,
+    "fte": 90.5,
+    "leavers": 0.8,
+    "hires": 0.9,
+    "cost": 547725.13
+   },
+   {
+    "country": "DE",
+    "department": "Sales",
+    "month": 4,
+    "fte": 90.6,
+    "leavers": 0.8,
+    "hires": 0.9,
+    "cost": 548330.35
+   },
+   {
+    "country": "DE",
+    "department": "Finance",
+    "month": 1,
+    "fte": 77.7,
+    "leavers": 0.8,
+    "hires": 0.7,
+    "cost": 519299.55
+   },
+   {
+    "country": "DE",
+    "department": "Finance",
+    "month": 2,
+    "fte": 77.6,
+    "leavers": 0.8,
+    "hires": 0.7,
+    "cost": 518631.21
+   },
+   {
+    "country": "DE",
+    "department": "Finance",
+    "month": 3,
+    "fte": 77.5,
+    "leavers": 0.8,
+    "hires": 0.7,
+    "cost": 517962.88
+   },
+   {
+    "country": "DE",
+    "department": "Finance",
+    "month": 4,
+    "fte": 77.4,
+    "leavers": 0.8,
+    "hires": 0.7,
+    "cost": 517294.54
+   },
+   {
+    "country": "DE",
+    "department": "HR",
+    "month": 1,
+    "fte": 71.4,
+    "leavers": 0.3,
+    "hires": 0.3,
+    "cost": 427131.06
+   },
+   {
+    "country": "DE",
+    "department": "HR",
+    "month": 2,
+    "fte": 71.4,
+    "leavers": 0.3,
+    "hires": 0.3,
+    "cost": 427131.06
+   },
+   {
+    "country": "DE",
+    "department": "HR",
+    "month": 3,
+    "fte": 71.4,
+    "leavers": 0.3,
+    "hires": 0.3,
+    "cost": 427131.06
+   },
+   {
+    "country": "DE",
+    "department": "HR",
+    "month": 4,
+    "fte": 71.4,
+    "leavers": 0.3,
+    "hires": 0.3,
+    "cost": 427131.06
+   },
+   {
+    "country": "ES",
+    "department": "Customer Service",
+    "month": 1,
+    "fte": 147.2,
+    "leavers": 2.3,
+    "hires": 2.3,
+    "cost": 578438.69
+   },
+   {
+    "country": "ES",
+    "department": "Customer Service",
+    "month": 2,
+    "fte": 147.2,
+    "leavers": 2.3,
+    "hires": 2.3,
+    "cost": 578438.69
+   },
+   {
+    "country": "ES",
+    "department": "Customer Service",
+    "month": 3,
+    "fte": 147.2,
+    "leavers": 2.3,
+    "hires": 2.3,
+    "cost": 578438.69
+   },
+   {
+    "country": "ES",
+    "department": "Customer Service",
+    "month": 4,
+    "fte": 147.2,
+    "leavers": 2.3,
+    "hires": 2.3,
+    "cost": 578438.69
+   },
+   {
+    "country": "ES",
+    "department": "Operations",
+    "month": 1,
+    "fte": 110.6,
+    "leavers": 1.6,
+    "hires": 1.4,
+    "cost": 462874.43
+   },
+   {
+    "country": "ES",
+    "department": "Operations",
+    "month": 2,
+    "fte": 110.4,
+    "leavers": 1.6,
+    "hires": 1.4,
+    "cost": 462037.4
+   },
+   {
+    "country": "ES",
+    "department": "Operations",
+    "month": 3,
+    "fte": 110.2,
+    "leavers": 1.6,
+    "hires": 1.4,
+    "cost": 461200.38
+   },
+   {
+    "country": "ES",
+    "department": "Operations",
+    "month": 4,
+    "fte": 110.0,
+    "leavers": 1.6,
+    "hires": 1.4,
+    "cost": 460363.36
+   },
+   {
+    "country": "ES",
+    "department": "Tech",
+    "month": 1,
+    "fte": 72.8,
+    "leavers": 0.8,
+    "hires": 0.8,
+    "cost": 395446.37
+   },
+   {
+    "country": "ES",
+    "department": "Tech",
+    "month": 2,
+    "fte": 72.8,
+    "leavers": 0.8,
+    "hires": 0.8,
+    "cost": 395446.37
+   },
+   {
+    "country": "ES",
+    "department": "Tech",
+    "month": 3,
+    "fte": 72.8,
+    "leavers": 0.8,
+    "hires": 0.8,
+    "cost": 395446.37
+   },
+   {
+    "country": "ES",
+    "department": "Tech",
+    "month": 4,
+    "fte": 72.8,
+    "leavers": 0.8,
+    "hires": 0.8,
+    "cost": 395446.37
+   },
+   {
+    "country": "ES",
+    "department": "Sales",
+    "month": 1,
+    "fte": 70.7,
+    "leavers": 1.1,
+    "hires": 1.2,
+    "cost": 342799.46
+   },
+   {
+    "country": "ES",
+    "department": "Sales",
+    "month": 2,
+    "fte": 70.8,
+    "leavers": 1.1,
+    "hires": 1.2,
+    "cost": 343284.33
+   },
+   {
+    "country": "ES",
+    "department": "Sales",
+    "month": 3,
+    "fte": 70.9,
+    "leavers": 1.1,
+    "hires": 1.2,
+    "cost": 343769.19
+   },
+   {
+    "country": "ES",
+    "department": "Sales",
+    "month": 4,
+    "fte": 71.0,
+    "leavers": 1.1,
+    "hires": 1.2,
+    "cost": 344254.06
+   },
+   {
+    "country": "ES",
+    "department": "Finance",
+    "month": 1,
+    "fte": 43.5,
+    "leavers": 0.6,
+    "hires": 0.5,
+    "cost": 210210.44
+   },
+   {
+    "country": "ES",
+    "department": "Finance",
+    "month": 2,
+    "fte": 43.4,
+    "leavers": 0.6,
+    "hires": 0.5,
+    "cost": 209727.2
+   },
+   {
+    "country": "ES",
+    "department": "Finance",
+    "month": 3,
+    "fte": 43.3,
+    "leavers": 0.6,
+    "hires": 0.5,
+    "cost": 209243.95
+   },
+   {
+    "country": "ES",
+    "department": "Finance",
+    "month": 4,
+    "fte": 43.2,
+    "leavers": 0.6,
+    "hires": 0.5,
+    "cost": 208760.71
+   },
+   {
+    "country": "ES",
+    "department": "HR",
+    "month": 1,
+    "fte": 42.1,
+    "leavers": 0.7,
+    "hires": 0.6,
+    "cost": 175848.2
+   },
+   {
+    "country": "ES",
+    "department": "HR",
+    "month": 2,
+    "fte": 42.0,
+    "leavers": 0.7,
+    "hires": 0.6,
+    "cost": 175430.51
+   },
+   {
+    "country": "ES",
+    "department": "HR",
+    "month": 3,
+    "fte": 41.9,
+    "leavers": 0.7,
+    "hires": 0.6,
+    "cost": 175012.82
+   },
+   {
+    "country": "ES",
+    "department": "HR",
+    "month": 4,
+    "fte": 41.8,
+    "leavers": 0.7,
+    "hires": 0.6,
+    "cost": 174595.13
+   }
+  ],
+  "outlook_summary": [
+   {
+    "country": "IT",
+    "budget_fte": 1035.7267642120794,
+    "budget_payroll": 62319604.76158492,
+    "budget_closing": 1036.1686080481345,
+    "budget_hiring_cost": 703005.8049682797,
+    "ytd_budget": 20500802.606130667,
+    "ytd_actual": 20464149.09,
+    "outlook_fte": 1032.6097440887913,
+    "outlook_payroll": 62126003.09953061,
+    "outlook_closing": 1031.4908347847163,
+    "outlook_hiring_cost": 809464.7772172163,
+    "variance": -193601.6620543152,
+    "volume": -187550.87618595397,
+    "rate": -6050.78586836563,
+    "plan_target": 1049.49,
+    "plan_closing": 1049.4900000000002,
+    "plan_fte": 1037.884164398755,
+    "plan_hires": 220.70674860440027,
+    "plan_hiring_cost": 882826.994417601,
+    "plan_payroll": 62509956.01697816,
+    "plan_vs_outlook": 383952.9174475521
+   },
+   {
+    "country": "PL",
+    "budget_fte": 1136.431727984612,
+    "budget_payroll": 48652562.52538973,
+    "budget_closing": 1136.2918920646177,
+    "budget_hiring_cost": 514623.13397574413,
+    "ytd_budget": 15814043.584756825,
+    "ytd_actual": 15974195.850000001,
+    "outlook_fte": 1132.9862053383347,
+    "outlook_payroll": 49076945.2549293,
+    "outlook_closing": 1131.0716640763771,
+    "outlook_hiring_cost": 592384.1187936794,
+    "variance": 424382.72953956574,
+    "volume": -147508.6464524737,
+    "rate": 571891.3759920431,
+    "plan_target": 1153.258,
+    "plan_closing": 1153.2580000000003,
+    "plan_fte": 1139.4903866016527,
+    "plan_hires": 259.63921671956103,
+    "plan_hiring_cost": 649098.0417989027,
+    "plan_payroll": 49419406.51094604,
+    "plan_vs_outlook": 342461.25601674616
+   },
+   {
+    "country": "DE",
+    "budget_fte": 729.3150625873186,
+    "budget_payroll": 55482483.197324365,
+    "budget_closing": 730.0918777533071,
+    "budget_hiring_cost": 520658.57324703084,
+    "ytd_budget": 18197198.51357791,
+    "ytd_actual": 18236245.27,
+    "outlook_fte": 727.023962544423,
+    "outlook_payroll": 55521386.89254463,
+    "outlook_closing": 726.6308481897429,
+    "outlook_hiring_cost": 621020.9063335054,
+    "variance": 38903.69522026181,
+    "volume": -174294.93253901994,
+    "rate": 213198.62775928935,
+    "plan_target": 736.898,
+    "plan_closing": 736.8980000000004,
+    "plan_fte": 730.0096486208441,
+    "plan_hires": 134.47721739952328,
+    "plan_hiring_cost": 672386.0869976165,
+    "plan_payroll": 55797950.58501088,
+    "plan_vs_outlook": 276563.69246625155
+   },
+   {
+    "country": "ES",
+    "budget_fte": 487.7933077818882,
+    "budget_payroll": 26442672.302312605,
+    "budget_closing": 488.2930313823386,
+    "budget_hiring_cost": 231249.20695318122,
+    "ytd_budget": 8673826.256115802,
+    "ytd_actual": 8654951.81,
+    "outlook_fte": 486.2071739830747,
+    "outlook_payroll": 26352102.372824706,
+    "outlook_closing": 486.1461405239775,
+    "outlook_hiring_cost": 252236.28028571274,
+    "variance": -90569.92948789895,
+    "volume": -85982.35277225409,
+    "rate": -4587.576715645595,
+    "plan_target": 493.594,
+    "plan_closing": 493.59400000000005,
+    "plan_fte": 488.40019827462703,
+    "plan_hires": 91.74857379584495,
+    "plan_hiring_cost": 275245.72138753487,
+    "plan_payroll": 26503257.981052883,
+    "plan_vs_outlook": 151155.60822817683
    }
   ]
  }

@@ -10,7 +10,7 @@
   :root { --s1: #0066cc; --s2: #af52de; --s3: #c93400; --s4: #248a3d; --s5: #d70015; }
   @media (prefers-color-scheme: dark) { :root { --s1: #4da3ff; --s2: #da8fff; --s3: #ff9f0a; --s4: #30d158; --s5: #ff6961; } }
   .print-only { display: none; }
-  #passo-colonne, #riepilogo-colonne, #dati-cliente, #vista-costo { display: none; }
+  #passo-colonne, #riepilogo-colonne, #dati-cliente, #vista-costo, #vista-piano { display: none; }
   .s-drop .file { font-weight: 600; color: var(--good); }
   .seg { display: inline-flex; flex-wrap: wrap; gap: 4px; background: var(--line-soft); border-radius: 14px; padding: 4px; margin: 0 0 20px; }
   .seg button { font: 600 15px var(--font); border: 0; background: transparent; color: var(--ink-2); min-height: 40px;
@@ -25,6 +25,15 @@
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 6px 10px; }
   .per-paese { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
   .per-paese span { font-size: 13px; color: var(--muted); display: block; }
+  #rinnovi { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+  #rinnovi label { flex-wrap: wrap; font-weight: 400; }
+  #rinnovi label span { width: 100%; }
+  #rinnovi label input { flex: 0 0 72px; }
+  #rinnovi label select { flex: 1 1 80px; }
+  #tab-piano td, #tab-piano th { white-space: nowrap; }
+  #obiettivi { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  #obiettivi input { width: 100%; min-height: 44px; font: 400 16px var(--font); color: var(--ink); background: var(--surface);
+    border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; box-sizing: border-box; }
   .preset { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
   .frase { font: 500 20px/1.45 var(--font-display); margin: 0 0 18px; max-width: 46em; }
   .chart { width: 100%; height: auto; display: block; margin: 8px 0 4px; font-family: var(--font); }
@@ -49,7 +58,7 @@
   <header class="s-hero">
     <p class="s-eyebrow" data-i18n="eyebrow">People budget · FY2027</p>
     <h1 data-i18n="title">What will next year's people cost be?</h1>
-    <p data-i18n="lead">Move the levers - leavers, backfills, growth, a hiring freeze, the pay review, closing pay gaps - and see FY2027 cost, month by month, with the sentence for the CFO. On the sample company or on your own staff.</p>
+    <p data-i18n="lead">Move the levers - leavers, backfills, growth, a hiring freeze, the pay review, collective renewals, the zloty, closing pay gaps - and see FY2027 cost, month by month, with the sentence for the CFO; then the outlook after the closed months and the hires a headcount target takes. On the sample company or on your own staff.</p>
   </header>
 
   <div class="s-privacy" role="note">
@@ -59,6 +68,7 @@
 
   <div class="seg" id="viste" role="group" data-i18n-attr="aria-label:vistaLabel">
     <button type="button" data-v="scenari" aria-pressed="true" data-i18n="vScenari">Scenarios for FY2027</button>
+    <button type="button" data-v="piano" aria-pressed="false" data-i18n="vPiano">Outlook and hiring plan</button>
     <button type="button" data-v="costo" aria-pressed="false" data-i18n="vCosto">What one employee costs</button>
   </div>
 
@@ -110,6 +120,12 @@
           <input type="range" id="l-tth" min="1" max="6" step="1"><small data-i18n="lTthSub">Months between a leaver and the backfill starting.</small></div>
         <div class="leva"><label for="l-mese-merito" data-i18n="lMeseMerito">Pay review from</label><select id="l-mese-merito"></select>
           <div class="per-paese" id="meriti" style="margin-top:8px"></div></div>
+        <div class="leva"><label data-i18n="lRinnovi">Collective renewals</label>
+          <div class="per-paese" id="rinnovi" style="margin-top:8px"></div>
+          <small data-i18n="lRinnoviSub">A rise on the whole payroll on top of the pay review, by country, from the month chosen.</small></div>
+        <div class="leva" id="leva-cambio"><label for="l-cambio"><span data-i18n="lCambio">Zloty to the euro</span></label>
+          <input type="number" id="l-cambio" min="2" max="8" step="0.01">
+          <small data-i18n="lCambioSub">Polish pay is set in zloty: fewer zloty to the euro make it cost more in euro.</small></div>
         <div class="leva"><label for="l-equita" data-i18n="lEquita">Close pay gaps from</label><select id="l-equita"></select>
           <div class="per-paese" id="equita" style="margin-top:8px"></div>
           <small data-i18n="lEquitaSub">Annual pay to add per country, before employer on-costs: the cost ceiling from the pay transparency tool.</small></div>
@@ -143,6 +159,19 @@
         </div>
         <div class="s-table-wrap"><table class="s-table" id="tab-confronto"></table></div>
       </section>
+    </section>
+  </div>
+
+  <div id="vista-piano">
+    <section class="s-card" aria-labelledby="h-piano">
+      <h2 id="h-piano" data-i18n="pianoTitolo">FY2027 after the closed months, and the hires the plan takes</h2>
+      <p class="s-sub" id="piano-sub"></p>
+      <h3 data-i18n="obiettiviTitolo">Headcount wanted at 30 June 2027, against 30 June 2026</h3>
+      <div class="per-paese" id="obiettivi" style="margin:8px 0 18px"></div>
+      <div class="s-kpis" id="kpi-piano"></div>
+      <p class="frase" id="frase-piano"></p>
+      <div class="s-table-wrap"><table class="s-table" id="tab-piano"></table></div>
+      <p class="note" data-i18n="pianoNota">Budget: the base case. Outlook: the closed months, then the base case's rules with the closed months' attrition and the last month's cost per FTE. Plan: the outlook's hires until a search opened now can fill a post, then the same hires each month, enough to land on the target. Hires are counted in FTE.</p>
     </section>
   </div>
 
