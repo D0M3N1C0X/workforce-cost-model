@@ -4,6 +4,24 @@ What changed in each release. Format: [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-06
+
+### Added
+
+- **Munich and Barcelona join the model.** The organisation's German and Spanish entities, already in the source data,
+  are now priced and forecast like Milan and Kraków: German pension, unemployment, health and care insurance with
+  their two ceilings, levies and accident insurance; Spanish Seguridad Social up to the maximum base and the
+  solidarity contribution above it. FY2026 is now €185.5M for 3,311 FTE, FY2027 €192.9M in the base case.
+- Settings sheet sections for Germany and Spain; one Roster formula per country, with the ceilings and the Spanish
+  solidarity bands; totals by country and counts of employees above each ceiling on the Reconciliation sheet
+  (1086 checks, was 570).
+- German and Spanish pay-gap costs from pay-transparency-readiness-kit (W15), pay review 3% and cost per hire.
+
+### Changed
+
+- The Dashboard, the CFO memo and the charts cover all four entities. The simulator is checked on 18,919 values
+  (was 9,679).
+
 ## [1.2.1] - 2026-10-23
 
 ### Fixed

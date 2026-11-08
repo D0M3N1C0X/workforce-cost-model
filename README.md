@@ -19,22 +19,23 @@
 
 People are most of the cost base, and the budget for them is usually a spreadsheet nobody can audit: an
 average salary times a headcount, a percentage for "on-costs", and a variance explained after the fact. This model
-answers the questions a finance director actually asks, for an employer in **Milan and Kraków**, **as HR and finance
+answers the questions a finance director actually asks, for an employer in **Milan, Kraków, Munich and
+Barcelona**, **as HR and finance
 would build it together**: what does one person really cost in each country, why did last year's people budget
 overrun, and what will next year cost if we freeze hiring, lose more people or start closing pay gaps?
 
 > **Synthetic company, real rules.** The employees are the organisation analysed in
 > [hr-people-analytics](https://github.com/D0M3N1C0X/hr-people-analytics); the budget, growth plans and pay review are
-> invented. Italian and Polish employer costs follow the 2026 rules (German and Spanish ones too, in the calculator),
+> invented. Italian, Polish, German and Spanish employer costs follow the 2026 rules, ceiling by ceiling,
 > each with its source and status in the [verification register](docs/verification.md). Not payroll or tax advice.
 
 ## The answer, for the finance director
 
 | | |
 |---|---|
-| **FY2026 closed €5.8M (5.7%) over budget, at €107.1M**, for 2,128 FTE on average. Volume explains it: headcount ahead of plan added €6.3M. | **A fully loaded employee costs €59,382 per FTE in Milan and €41,727 in Kraków.** In Poland, 79 people earn above the 282,600 PLN cap on pension and disability contributions. |
-| **FY2027 costs €111.0M in the base case (+3.6%)**: more FTE and the January pay review. | **A hiring freeze from October cuts it to €104.6M**, but the year ends with 278 fewer FTE than the base case: a capacity decision, not a finance one. |
-| **Higher attrition barely moves payroll** but lifts recruitment cost to €1.54M. | **Closing pay gaps from January 2027 adds €0.76M** to FY2027 and €1.52M a year after, using the gaps found by [pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit). |
+| **FY2026 closed €9.9M (5.6%) over budget, at €185.5M**, for 3,311 FTE on average in four countries. Volume explains it: headcount ahead of plan added €10.3M. | **A fully loaded employee costs €74,887 per FTE in Munich, €59,382 in Milan, €53,371 in Barcelona and €41,727 in Kraków.** Ceilings matter: 226 German employees earn above the health and care ceiling, 64 Spanish ones above the maximum base, 79 Polish ones above the ZUS cap. |
+| **FY2027 costs €192.9M in the base case (+4.0%)**: more FTE and the January pay review. | **A hiring freeze from October cuts it to €182.6M**, but the year ends with 411 fewer FTE than the base case: a capacity decision, not a finance one. |
+| **Higher attrition barely moves payroll** but lifts recruitment cost to €2.49M. | **Closing pay gaps from January 2027 adds €1.23M** to FY2027 and €2.46M a year after, using the gaps found by [pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit). |
 
 <img alt="Volume explains the FY2026 overrun" src="reports/figures/02_variance_bridge.svg" width="100%">
 
@@ -59,7 +60,9 @@ leaves the computer, and it also tells you what one employee costs in Italy, Pol
 ## The judgement calls
 
 - **A person's cost is loaded with every employer contribution**, ceiling by ceiling: INPS and TFR in Italy; ZUS with
-  its annual 30-times cap, the Labour Fund, FGŚP and PPK in Poland. "Salary plus 30%" is the error this replaces.
+  its annual 30-times cap, the Labour Fund, FGŚP and PPK in Poland; pension, health and care insurance with their two
+  ceilings in Germany; Seguridad Social up to the maximum base, and the solidarity contribution above it, in Spain.
+  "Salary plus 30%" is the error this replaces: on-costs run from 21% of gross pay in Kraków and Munich to 37% in Milan.
 - **The variance is split into volume, mix and rate**, and the parts add up exactly to the overrun: the finance
   director sees that headcount, not pay, explains last year.
 - **Fiscal years run July to June**, so FY2026 ends on the date of the source snapshot, and a month is its month-end
@@ -78,7 +81,7 @@ Every formula and simplification is in [docs/method.md](docs/method.md).
 
 | | |
 |---|---|
-| **Three engines, one answer** | pandas, the Excel model's live formulas (reconciled on 570 checks, recalculated in CI by LibreOffice) and the browser simulator (checked against the model on 9,679 values) |
+| **Three engines, one answer** | pandas, the Excel model's live formulas (reconciled on 1086 checks, recalculated in CI by LibreOffice) and the browser simulator (checked against the model on 18,919 values) |
 | **Every rate sourced** | a [verification register](docs/verification.md) with the source, its status and the date each rate and ceiling was read |
 | **A client-ready workbook** | inputs in blue, formulas in black, key assumptions in yellow, one Settings sheet, a scenario picker, no dynamic arrays |
 | **Reproducible** | one command rebuilds every output; CI fails if a rebuilt file differs from the committed one |

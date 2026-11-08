@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports"
 SOURCE = REPORTS / "cfo_memo.md"
 
-TITLE = "FY2027 People Cost: Italy and Poland"
+TITLE = "FY2027 People Cost: Italy, Poland, Germany and Spain"
 
 STYLE = """
 <style>

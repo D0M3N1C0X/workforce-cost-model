@@ -6,12 +6,12 @@ All synthetic. No real person's pay is in this repository.
 |---|---|---|
 | `source/employees.csv` | copied from [hr-people-analytics](https://github.com/D0M3N1C0X/hr-people-analytics) at commit `201495b` | The 4,000-employee organisation analysed there, seed 42: the same file, with the same checksum, as in [pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit). SHA-256 `3727232…7da79c`, pinned in `src/config.py` and checked on every build. |
 
-The model reads eight columns and keeps the Italian and Polish entities:
+The model reads eight columns and keeps all four entities:
 
 | Column | Used as |
 |---|---|
 | `employee_id` | the row key on the Roster sheet |
-| `country` | `IT` (Milan) or `PL` (Kraków); the German and Spanish entities are left out |
+| `country` | `IT` (Milan), `PL` (Kraków), `DE` (Munich) or `ES` (Barcelona) |
 | `department`, `job_level` | the planning cell, and the bonus target |
 | `fte` | 1.0 or 0.8 |
 | `base_salary_eur` | full-time annual base salary, EUR |

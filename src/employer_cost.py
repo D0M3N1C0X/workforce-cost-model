@@ -1,8 +1,7 @@
 """
 What one employee costs the employer in a year, item by item, in Italy, Poland, Germany or Spain.
 
-The same rules as model.roster() for Italy and Poland (a test holds them equal), plus Germany and Spain for the
-calculator and for a client's own staff. Annual pay against annual ceilings: a simplification of monthly
+The rules model.roster() applies to the four entities, and the calculator and simulator to a client's own staff. Annual pay against annual ceilings: a simplification of monthly
 ceilings that gives the same answer when pay is spread evenly over the year. Not payroll advice.
 """
 import config as C
@@ -54,14 +53,7 @@ COUNTRIES = ["IT", "PL", "DE", "ES"]
 
 
 def loaded_factor(country: str) -> float:
-    """On-costs per euro of pay added below every ceiling (as model.loaded_factor for Italy and Poland): the
+    """On-costs per euro of pay added below every ceiling (model.loaded_factor): the
     price of a pay rise or of closing a pay gap."""
-    if country in ("IT", "PL"):
-        import model
-        return model.loaded_factor(country)
-    if country == "DE":
-        return 1 + (C.DE_PENSION + C.DE_UNEMPLOYMENT + C.DE_HEALTH + C.DE_HEALTH_EXTRA + C.DE_CARE + C.DE_INSOLVENCY
-                    + C.DE_U2 + C.DE_ACCIDENT)
-    if country == "ES":
-        return 1 + C.ES_COMMON + C.ES_MEI + C.ES_UNEMPLOYMENT + C.ES_FOGASA + C.ES_TRAINING + C.ES_ACCIDENT
-    raise ValueError(f"no employer-cost rules for {country}")
+    import model
+    return model.loaded_factor(country)

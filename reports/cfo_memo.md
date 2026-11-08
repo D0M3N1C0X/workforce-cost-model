@@ -1,6 +1,6 @@
-# FY2027 people cost: Italy and Poland
+# FY2027 people cost: Italy, Poland, Germany and Spain
 
-**Scope:** IT · Milan and PL · Kraków, 2,128 FTE on average in FY2026
+**Scope:** IT · Milan, PL · Kraków, DE · Munich and ES · Barcelona, 3,311 FTE on average in FY2026
 **Model:** fully loaded cost per employee, FY2026 budget against actual, FY2027 month by month under four scenarios, in a live Excel model reconciled with pandas
 **Data:** synthetic, the organisation analysed in [hr-people-analytics](https://github.com/D0M3N1C0X/hr-people-analytics); rates and caps for 2026 from the sources in [docs/verification.md](../docs/verification.md)
 
@@ -8,11 +8,11 @@
 
 ## The answer
 
-- **FY2026 closed €5.8M (5.7%) over budget, at €107.1M.** Headcount ran ahead of plan: volume added €6.3M, the department mix €0.18M, while cheaper joiners saved €0.68M.
-- **FY2027 costs €111.0M in the base case (+3.6%).** More FTE add €2.2M: the year opens with the headcount FY2026 closed on, and Customer Service, Tech and Sales keep growing. Cost per FTE adds €1.7M, where the January pay review (2.5% in Italy, 5.0% in Poland) adds €2.0M and the lower cost per FTE of the June 2026 workforce takes back €0.3M.
-- **A hiring freeze from October would cut FY2027 to €104.6M** (−2.3%), but the year would close with 278 fewer FTE than the base case: a capacity decision, not a finance one.
-- **Higher attrition barely moves payroll but costs in hiring.** With attrition 30% higher (5.3 points), vacancies offset the backfills, while recruitment rises to €1.54M (€0.33M more).
-- **Starting to close pay gaps in January 2027, before the first pay-transparency reports are due, adds €0.76M to FY2027** and €1.52M in every full year after, loaded with employer costs. The gaps come from [pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit).
+- **FY2026 closed €9.9M (5.6%) over budget, at €185.5M.** Headcount ran ahead of plan: volume added €10.3M, the department mix €0.09M, while cheaper joiners saved €0.50M.
+- **FY2027 costs €192.9M in the base case (+4.0%).** More FTE add €4.6M: the year opens with the headcount FY2026 closed on, and Customer Service, Tech and Sales keep growing. Cost per FTE adds €2.8M, where the January pay review (2.5% in Italy, 5.0% in Poland, 3.0% in Germany and 3.0% in Spain) adds €3.2M and the lower cost per FTE of the June 2026 workforce takes back €0.3M.
+- **A hiring freeze from October would cut FY2027 to €182.6M** (−1.6%), but the year would close with 411 fewer FTE than the base case: a capacity decision, not a finance one.
+- **Higher attrition barely moves payroll but costs in hiring.** With attrition 30% higher (5.0 points), vacancies offset the backfills, while recruitment rises to €2.49M (€0.52M more).
+- **Starting to close pay gaps in January 2027, before the first pay-transparency reports are due, adds €1.23M to FY2027** and €2.46M in every full year after, loaded with employer costs. The gaps come from [pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit).
 
 ## 1. FY2026: where the budget went
 
@@ -24,6 +24,8 @@
 |---|---:|---:|---:|---:|---:|---:|
 | IT · Milan | €57.7M | €60.8M | €3.51M | €0.06M | −€0.51M | €3.06M (5.3%) |
 | PL · Kraków | €43.6M | €46.3M | €2.79M | €0.12M | −€0.17M | €2.74M (6.3%) |
+| DE · Munich | €49.6M | €52.6M | €2.84M | −€0.06M | €0.17M | €2.94M (5.9%) |
+| ES · Barcelona | €24.6M | €25.8M | €1.19M | −€0.03M | €0.01M | €1.17M (4.8%) |
 
 *Volume: FTE above plan at budget cost per FTE. Mix: departments with higher cost per FTE grew more. Rate: actual against budget cost per FTE, at actual FTE.*
 
@@ -32,12 +34,12 @@ The five largest overruns by department:
 | Employer | Department | Budget FTE | Actual FTE | Variance | of which volume |
 |---|---|---:|---:|---:|---:|
 | IT · Milan | Operations | 226 | 245 | €1,019k | €1,127k |
+| DE · Munich | Operations | 159 | 173 | €955k | €1,004k |
 | PL · Kraków | Tech | 164 | 180 | €735k | €873k |
 | PL · Kraków | Operations | 262 | 283 | €631k | €824k |
 | IT · Milan | Sales | 112 | 119 | €626k | €390k |
-| IT · Milan | Finance | 90 | 101 | €578k | €748k |
 
-All 12 departments ran above planned FTE. The largest overruns were in Operations (IT · Milan), Tech (PL · Kraków) and Operations (PL · Kraków), where extra headcount met a high cost per FTE.
+All 24 departments ran above planned FTE. The largest overruns were in Operations (IT · Milan), Operations (DE · Munich) and Tech (PL · Kraków), where extra headcount met a high cost per FTE.
 
 ## 2. What a fully loaded employee costs
 
@@ -45,8 +47,10 @@ All 12 departments ran above planned FTE. The largest overruns were in Operation
 |---|---:|---:|---:|---|
 | IT · Milan | €59,382 | 29.8% of gross pay | 7.0% of gross pay | INPS pension 23.81%, other INPS and INAIL 6.0% (illustrative), TFR at base pay / 13.5 |
 | PL · Kraków | €41,727 | 20.7% of gross pay | - | ZUS pension 9.76% and disability 6.50% up to the annual cap; accident 1.67%, Labour Fund 2.45%, FGŚP 0.10%, PPK 1.5% on 50% of pay |
+| DE · Munich | €74,887 | 20.8% of gross pay | - | pension and unemployment 10.6% up to €101,400; health, additional contribution and care 10.55% up to €69,750; levies 0.59%, accident 1.08% (illustrative) |
+| ES · Barcelona | €53,371 | 29.8% of gross pay | - | common contingencies and MEI 24.35%, unemployment, FOGASA and training 6.3%, AT/EP 1.5%, up to €61,214; solidarity contribution above it |
 
-*Gross pay is base pay at contracted FTE plus target bonus. In Poland, 79 of 1,362 employees earn above the 2026 cap of 282,600 PLN (€66,388 at 4.2568 PLN per euro), so their pension and disability contributions stop part-way through the year.*
+*Gross pay is base pay at contracted FTE plus target bonus. In Poland, 79 of 1,362 employees earn above the 2026 cap of 282,600 PLN (€66,388 at 4.2568 PLN per euro), so their pension and disability contributions stop part-way through the year. Ceilings bite harder elsewhere: 226 of 842 German employees earn above the health and care ceiling, and 64 of 569 Spanish ones above the maximum base, where the solidarity contribution takes over at a much lower rate.*
 
 ## 3. FY2027 under four scenarios
 
@@ -54,24 +58,24 @@ All 12 departments ran above planned FTE. The largest overruns were in Operation
 
 | Scenario | People cost | Change vs FY2026 | Average FTE | Closing FTE | Hires | Hiring cost | Remediation |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Base | €111.0M | +3.6% | 2,172 | 2,172 | 382 | €1.22M | - |
-| Hiring freeze | €104.6M | −2.3% | 2,049 | 1,895 | 86 | €0.27M | - |
-| High attrition | €110.7M | +3.3% | 2,166 | 2,161 | 484 | €1.54M | - |
-| Pay equity first | €111.7M | +4.3% | 2,172 | 2,172 | 382 | €1.22M | €0.76M |
+| Base | €192.9M | +4.0% | 3,389 | 3,391 | 563 | €1.97M | - |
+| Hiring freeze | €182.6M | −1.6% | 3,207 | 2,980 | 126 | €0.44M | - |
+| High attrition | €192.4M | +3.7% | 3,380 | 3,375 | 713 | €2.49M | - |
+| Pay equity first | €194.1M | +4.7% | 3,389 | 3,391 | 563 | €1.97M | €1.23M |
 
 *People cost = payroll plus pay-equity remediation; hiring cost is shown apart. Scenario settings: Base - attrition x1.0, replacement 90%, growth x1.0; Hiring freeze - attrition x1.0, replacement 90%, growth x0.0, freeze from month 4; High attrition - attrition x1.3, replacement 90%, growth x1.0; Pay equity first - attrition x1.0, replacement 90%, growth x1.0, remediation from month 7.*
 
 ![FTE paths](figures/04_fte_paths.svg)
 
-FY2026 attrition was 16.9% in Italy and 18.2% in Poland. The forecast backfills 90% of leavers after 2 months, so each extra point of attrition adds about €62k of recruitment cost at the assumed cost per hire.
+FY2026 attrition was 16.9% in Italy, 18.2% in Poland, 14.1% in Germany and 15.6% in Spain. The forecast backfills 90% of leavers after 2 months, so each extra point of attrition adds about €105k of recruitment cost at the assumed cost per hire.
 
 ## 4. Recommendations
 
-1. **Set the FY2027 budget at the base case plus pay-equity remediation, €111.7M.** The first pay-transparency reports cover 2026 pay and are due in June 2027; gaps that are neither justified nor closed within six months lead to a joint pay assessment.
+1. **Set the FY2027 budget at the base case plus pay-equity remediation, €194.1M.** The first pay-transparency reports cover 2026 pay and are due in June 2027; gaps that are neither justified nor closed within six months lead to a joint pay assessment.
 2. **Control headcount by position, month by month.** The FY2026 overrun was volume, and actual FTE was already more than 2% above plan by August 2025.
-3. **Treat a hiring freeze as an operating decision.** It saves money only by ending the year 278 FTE short.
+3. **Treat a hiring freeze as an operating decision.** It saves money only by ending the year 411 FTE short.
 4. **Price attrition in the budget.** Recruitment cost rises with every leaver, even when payroll does not.
-5. **Replace the illustrative rates with the payroll provider's:** other INPS contributions and INAIL, the Polish accident rate, PPK participation, and cost per hire.
+5. **Replace the illustrative rates with the payroll provider's:** other INPS contributions and INAIL, the Polish accident rate, PPK participation, the German insurer's additional contribution and accident rate, the Spanish AT/EP tariff, and cost per hire.
 
 ## 5. Method and limits
 

@@ -2,8 +2,7 @@
 The workforce cost model in pandas. Every function has a twin in the Excel workbook built by
 build_workbook.py, written with the same order of operations so the two agree.
 
-    roster()      one row per employee of the Italian and Polish entities, with the fully
-                  loaded annual cost
+    roster()      one row per employee of the four entities, with the fully loaded annual cost
     actuals()     FY2026 month-end FTE and cost, by entity and department
     budget()      the FY2026 plan
     variance()    FY2026 actual against budget: volume, mix and rate
@@ -16,6 +15,7 @@ from datetime import date
 import pandas as pd
 
 import config as C
+import employer_cost as E
 
 FAR_FUTURE = pd.Timestamp("2099-12-31")
 
@@ -50,7 +50,7 @@ def pl_min_wage_eur() -> float:
 
 
 def roster() -> pd.DataFrame:
-    """Everyone employed by the Italian or Polish entity at any point of FY2026."""
+    """Everyone employed by one of the four entities at any point of FY2026."""
     verify_source()
     e = pd.read_csv(C.SOURCE_EMPLOYEES, parse_dates=["hire_date", "exit_date"])
     e = e[e["country"].isin(list(C.ENTITIES))]
@@ -70,14 +70,11 @@ def roster() -> pd.DataFrame:
     r["base"] = r["salary"] * r["fte"]
     r["bonus"] = r["base"] * r["job_level"].map(C.BONUS_TARGET)
     r["gross"] = r["base"] + r["bonus"]
-    it = r["country"] == "IT"
-    capped = r["gross"].clip(upper=pl_cap_eur())
-    it_social = r["gross"] * C.IT_IVS + r["gross"] * C.IT_OTHER
-    pl_social = (capped * C.PL_PENSION + capped * C.PL_DISABILITY + r["gross"] * C.PL_ACCIDENT
-                 + r["gross"] * C.PL_LABOUR_FUND + r["gross"] * C.PL_FGSP
-                 + r["gross"] * C.PL_PPK * C.PPK_PARTICIPATION)
-    r["employer_social"] = it_social.where(it, pl_social)
-    r["tfr"] = (r["base"] / C.TFR_DIVISOR).where(it, 0.0)
+    # employer contributions with each country's ceilings (employer_cost.items, the calculator's rules); the TFR is
+    # Italy's only non-contribution item
+    items = [E.items(c, g, b) for c, g, b in zip(r["country"], r["gross"], r["base"], strict=True)]
+    r["employer_social"] = [sum(v for k, v in i.items() if k != "tfr") for i in items]
+    r["tfr"] = [i.get("tfr", 0.0) for i in items]
     r["loaded_cost"] = r["gross"] + r["employer_social"] + r["tfr"]
     return r
 
@@ -160,8 +157,15 @@ def loaded_factor(country: str) -> float:
     """On-costs per euro of base pay, for pay added by remediation (no cap applied)."""
     if country == "IT":
         return 1 + C.IT_IVS + C.IT_OTHER + 1 / C.TFR_DIVISOR
-    return (1 + C.PL_PENSION + C.PL_DISABILITY + C.PL_ACCIDENT + C.PL_LABOUR_FUND + C.PL_FGSP
-            + C.PL_PPK * C.PPK_PARTICIPATION)
+    if country == "PL":
+        return (1 + C.PL_PENSION + C.PL_DISABILITY + C.PL_ACCIDENT + C.PL_LABOUR_FUND + C.PL_FGSP
+                + C.PL_PPK * C.PPK_PARTICIPATION)
+    if country == "DE":
+        return 1 + (C.DE_PENSION + C.DE_UNEMPLOYMENT + C.DE_HEALTH + C.DE_HEALTH_EXTRA + C.DE_CARE + C.DE_INSOLVENCY
+                    + C.DE_U2 + C.DE_ACCIDENT)
+    if country == "ES":
+        return 1 + C.ES_COMMON + C.ES_MEI + C.ES_UNEMPLOYMENT + C.ES_FOGASA + C.ES_TRAINING + C.ES_ACCIDENT
+    raise ValueError(f"no employer-cost rules for {country}")
 
 
 def forecast(r: pd.DataFrame, act: pd.DataFrame, scenario: tuple) -> tuple[pd.DataFrame, pd.DataFrame]:
