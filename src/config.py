@@ -94,12 +94,36 @@ CLIENT_DEFAULTS = {"attrition": 0.12, "growth": 0.02,
 KIT_COMMIT = "95cdf8e"
 REMEDIATION = {"IT": 512_476.52, "PL": 674_086.32, "DE": 254_265.13, "ES": 472_873.79}
 
-# Scenarios: attrition multiplier, replacement ratio, growth multiplier, hiring-freeze month
-# (0 = none), remediation start month (0 = none).
+# Collective pay rises on top of the pay review, by entity: (rise, from month), applied only in scenarios that
+# switch renewals on - illustrative: the size of a renewal on the whole payroll is the company's own estimate.
+# Italy: the CCNL Terziario tranche of November 2026; Germany and Spain: a January round; Poland: none (no
+# sector agreement, the pay review covers it).
+RENEWAL = {"IT": (0.015, 5), "PL": (0.0, 7), "DE": (0.020, 7), "ES": (0.010, 7)}
+
+# Scenarios: attrition multiplier, replacement ratio, growth multiplier, hiring-freeze month (0 = none),
+# remediation start month (0 = none), collective renewals (1 = on), EUR/PLN for Polish pay.
+# Polish pay is set in zloty: a stronger zloty (fewer PLN per euro) makes it cost more in euro.
 SCENARIOS = [
-    ("Base", 1.0, 0.90, 1.0, 0, 0),
-    ("Hiring freeze", 1.0, 0.90, 0.0, 4, 0),
-    ("High attrition", 1.3, 0.90, 1.0, 0, 0),
-    ("Pay equity first", 1.0, 0.90, 1.0, 0, 7),
+    ("Base", 1.0, 0.90, 1.0, 0, 0, 0, EUR_PLN),
+    ("Hiring freeze", 1.0, 0.90, 0.0, 4, 0, 0, EUR_PLN),
+    ("High attrition", 1.3, 0.90, 1.0, 0, 0, 0, EUR_PLN),
+    ("Pay equity first", 1.0, 0.90, 1.0, 0, 7, 0, EUR_PLN),
+    ("Cost pressure", 1.0, 0.90, 1.0, 0, 0, 1, 4.00),
 ]
-SCENARIO_FIELDS = ["attrition_x", "replacement", "growth_x", "freeze_from", "remediation_from"]
+SCENARIO_FIELDS = ["attrition_x", "replacement", "growth_x", "freeze_from", "remediation_from", "renewal",
+                   "eur_pln"]
+
+# ---- FY2027 so far: the 4+8 outlook ---------------------------------------------------------------
+# Months of FY2027 closed (July to October 2026). Their actuals are SYNTHETIC: src/ytd.py writes them from the
+# starting population with the drivers below, which differ from the plan on purpose, then rounds them as a
+# payroll extract would be. They tell a story to analyse, not a fact.
+YTD_MONTHS = 4
+YTD_ATTRITION_X = {"Customer Service": 1.50, "Operations": 1.00, "Tech": 0.85, "Sales": 1.10,
+                   "Finance": 1.00, "HR": 1.00}           # leavers against FY2026 attrition
+YTD_GROWTH_FILL = {"Customer Service": 1.00, "Operations": 1.00, "Tech": 0.40, "Sales": 1.00,
+                   "Finance": 1.00, "HR": 1.00}           # share of planned growth hires actually made
+YTD_PAY_DRIFT = {"IT": 0.000, "PL": 0.012, "DE": 0.004, "ES": 0.000}   # cost per FTE above the starting rate
+
+# The headcount plan: FTE the business wants by June 2027, against June 2026, by department - illustrative.
+PLAN_TARGET = {"Customer Service": -0.03, "Operations": 0.00, "Tech": 0.10, "Sales": 0.05,
+               "Finance": 0.00, "HR": 0.00}

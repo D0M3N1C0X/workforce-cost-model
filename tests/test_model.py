@@ -1,4 +1,5 @@
 """The pandas model obeys its own definitions: cost rules, the variance split and the forecast recursion."""
+import pandas as pd
 import pytest
 
 import config as C
@@ -156,6 +157,7 @@ def test_scenarios_move_in_the_expected_direction(out):
     assert tot.loc["Hiring freeze", "closing_fte"] < tot.loc["Base", "closing_fte"]
     assert tot.loc["High attrition", "fy27_hiring_cost"] > tot.loc["Base", "fy27_hiring_cost"]
     assert tot.loc["Pay equity first", "fy27_cost"] > tot.loc["Base", "fy27_cost"]
+    assert tot.loc["Cost pressure", "fy27_cost"] > tot.loc["Base", "fy27_cost"]
 
 
 def test_model_runs_on_a_subset():
@@ -164,3 +166,71 @@ def test_model_runs_on_a_subset():
     o = model.run(sub)
     assert len(o["roster"]) == len(sub)
     assert o["summary"]["fy27_cost"].gt(0).all()
+
+
+def test_renewals_and_the_zloty_move_the_rate(out):
+    name = next(s for s in C.SCENARIOS if s[6] and s[7] != C.EUR_PLN)
+    f, rem = out["forecasts"][name[0]]
+    start = out["start"].set_index(["country", "department"])["rate"]
+    for row in f.itertuples():
+        rise, month = C.RENEWAL[row.country]
+        fx = C.EUR_PLN / name[7] if row.country == "PL" else 1.0
+        rate = (start[(row.country, row.department)] * fx * (1 + C.MERIT[row.country] * (row.month >= C.MERIT_MONTH))
+                * (1 + rise * (row.month >= month)))
+        assert row.cost == pytest.approx(row.fte * rate / 12, **APPROX)
+
+
+def test_a_stronger_zloty_scales_only_polish_cost(out):
+    base = model.forecast(out["roster"], out["actuals"], C.SCENARIOS[0])[0]
+    strong = model.forecast(out["roster"], out["actuals"], (*C.SCENARIOS[0][:7], 4.0))[0]
+    ratio = strong["cost"] / base["cost"]
+    pl = base["country"] == "PL"
+    assert (ratio[pl] - C.EUR_PLN / 4.0).abs().max() < 1e-12
+    assert (ratio[~pl] - 1).abs().max() < 1e-12
+
+
+def test_closed_months_roll_forward_like_a_payroll_extract(out):
+    y = out["ytd"]
+    assert sorted(y["month"].unique()) == list(range(1, C.YTD_MONTHS + 1))
+    start = out["start"].set_index(["country", "department"])["fte"]
+    for (c, d), g in y.groupby(["country", "department"]):
+        prev = [start[(c, d)], *g["fte"].iloc[:-1]]
+        assert ((pd.Series(prev, index=g.index) - g["leavers"] + g["hires"]).round(1) == g["fte"]).all()
+        assert (g[["fte", "leavers", "hires"]] == g[["fte", "leavers", "hires"]].round(1)).all().all()
+
+
+def test_with_no_closed_month_the_outlook_is_the_base_case(out):
+    om, _ = model.outlook(out["roster"], out["actuals"], out["ytd"].iloc[0:0])
+    base = out["forecasts"]["Base"][0]
+    for col in ("fte", "hires", "leavers", "cost", "hiring_cost"):
+        assert abs(om[col].to_numpy() - base[col].to_numpy()).max() < 1e-6, col
+
+
+def test_the_outlook_keeps_the_actuals_then_rolls_forward(out):
+    om, k = out["outlook"], C.YTD_MONTHS
+    y = out["ytd"].set_index(["country", "department", "month"])
+    for row in om[om["month"] <= k].itertuples():
+        assert row.fte == y.loc[(row.country, row.department, row.month), "fte"]
+        assert row.cost == y.loc[(row.country, row.department, row.month), "cost"]
+    for _, g in om.groupby(["country", "department"]):
+        g = g.sort_values("month")
+        roll = g["fte"].shift(1) - g["leavers"] + g["hires"]
+        assert (roll[g["month"] > k] - g.loc[g["month"] > k, "fte"]).abs().max() < 1e-9
+
+
+def test_the_plan_lands_on_its_target(out):
+    pm = out["plan"].set_index(["country", "department", "month"]).sort_index()
+    for c in out["plan_cells"].itertuples():
+        closing = pm.loc[(c.country, c.department, C.MONTHS), "fte"]
+        if c.monthly_hires > 0:
+            assert closing == pytest.approx(c.target, rel=1e-9)
+        else:
+            assert closing >= c.target - 1e-9
+        later = pm.loc[(c.country, c.department)].loc[c.first_month:, "hires"]
+        assert (later == c.monthly_hires).all()
+
+
+def test_outlook_variance_is_volume_plus_rate(out):
+    s = out["outlook_summary"]
+    assert ((s["volume"] + s["rate"] - s["variance"]).abs() < 1e-6).all()
+    assert s["plan_vs_outlook"].sum() > 0

@@ -13,7 +13,12 @@ SCEN_SHOWN = ["Base", "Hiring freeze", "High attrition"]
 
 
 def m(x, d=1):
-    return f"{'−' if x < 0 else ''}€{abs(x) / 1e6:,.{d}f}M"
+    return f"{'−' if round(x / 1e6, d) < 0 else ''}€{abs(x) / 1e6:,.{d}f}M"
+
+
+def ms(x, d=2):
+    """Money with its sign, for a change."""
+    return ("+" if round(x / 1e6, d) > 0 else "") + m(x, d)
 
 
 def k(x):
@@ -49,8 +54,17 @@ def facts(o: dict) -> dict:
                                               "fy27_hires", "fy27_hiring_cost", "closing_fte", "fy27_fte",
                                               "fy26_fte"]].sum()
     r = o["roster"]
-    base, freeze, high, equity = (tot.loc[n] for n in ("Base", "Hiring freeze", "High attrition", "Pay equity first"))
-    return {"ve": ve, "tot": tot, "base": base, "freeze": freeze, "high": high, "equity": equity,
+    base, freeze, high, equity, cost = (tot.loc[n] for n in ("Base", "Hiring freeze", "High attrition",
+                                                              "Pay equity first", "Cost pressure"))
+    by = s.set_index(["scenario", "country"])
+    osum = o["outlook_summary"].set_index("country")
+    k_closed = int(o["ytd"]["month"].max()) if len(o["ytd"]) else 0
+    return {"ve": ve, "tot": tot, "base": base, "freeze": freeze, "high": high, "equity": equity, "cost": cost,
+            "fx_pl": by.loc[("Cost pressure", "PL"), "fy27_cost"] - by.loc[("Base", "PL"), "fy27_cost"],
+            "os": osum, "os_all": osum.sum(numeric_only=True), "k": k_closed, "plan_cells": o["plan_cells"],
+            "fte_gap": osum["budget_fte"].sum() - osum["outlook_fte"].sum(),
+            "plan_monthly": o["plan_cells"]["monthly_hires"].sum(),
+            "plan_first": int(o["plan_cells"]["first_month"].iloc[0]),
             "above_cap": int(((r["country"] == "PL") & (r["gross"] > model.pl_cap_eur())).sum()),
             "pl_n": int((r["country"] == "PL").sum()),
             "de_above": int(((r["country"] == "DE") & (r["gross"] > C.DE_CAP_HEALTH)).sum()),
@@ -87,6 +101,15 @@ def write(o: dict) -> dict:
         paths[n] = fc.groupby("month")["fte"].sum().tolist()
     (FIG / "04_fte_paths.svg").write_text(charts.fte_paths(
         months26 + months27, a_fte, paths, "A hiring freeze ends the year with far fewer people"))
+    osum, os_all = f["os"], f["os_all"]
+    closed_to = model.month_ends(C.FY2027_START)[f["k"] - 1] if f["k"] else None
+    (FIG / "05_outlook_bridge.svg").write_text(charts.variance_bridge(
+        [(C.ENTITIES[c], osum.loc[c, "budget_payroll"], osum.loc[c, "volume"], osum.loc[c, "rate"],
+          osum.loc[c, "outlook_payroll"]) for c in C.ENTITIES],
+        "FY2027 outlook: fewer people, each costing more",
+        subtitle=(f"FY2027 payroll, outlook after {closed_to:%B %Y} against budget, by effect" if closed_to
+                  else "FY2027 payroll, outlook against budget, by effect"),
+        labels=("Volume", "Rate"), ends=("Budget", "outlook")))
 
     vd = o["variance_dept"]
     top = vd.sort_values("variance", ascending=False).head(5)
@@ -122,14 +145,17 @@ def write(o: dict) -> dict:
     add("# FY2027 people cost: Italy, Poland, Germany and Spain")
     add("")
     add(f"**Scope:** {listing(C.ENTITIES.values())}, {round(base['fy26_fte']):,} FTE on average in FY2026")
-    add("**Model:** fully loaded cost per employee, FY2026 budget against actual, FY2027 month by month under four "
-        "scenarios, in a live Excel model reconciled with pandas")
+    words = {4: "four", 5: "five", 6: "six"}
+    add("**Model:** fully loaded cost per employee, FY2026 budget against actual, FY2027 month by month under "
+        f"{words.get(len(C.SCENARIOS), len(C.SCENARIOS))} scenarios, the outlook after {closed_to:%B} and a headcount "
+        "plan, in a live Excel model reconciled with pandas")
     add("**Data:** synthetic, the organisation analysed in "
         "[hr-people-analytics](https://github.com/D0M3N1C0X/hr-people-analytics); rates and caps for 2026 from "
         "the sources in [docs/verification.md](../docs/verification.md)")
     add("")
-    add("> Fiscal years run July to June. The budget, growth plans, pay review and cost per hire are invented for "
-        "the demonstration; the employer-cost rules are real and dated.")
+    add("> Fiscal years run July to June. The budget, growth plans, pay review, renewals, cost per hire, the "
+        f"July-{closed_to:%B} 2026 actuals and the headcount plan are invented for the demonstration; the "
+        "employer-cost rules are real and dated.")
     add("")
     add("## The answer")
     add("")
@@ -156,6 +182,21 @@ def write(o: dict) -> dict:
         f"reports are due, adds {m(equity['fy27_remediation'], 2)} to FY2027** and {m(full_year_equity, 2)} in every full year after, loaded with employer "
         f"costs. The gaps come from "
         f"[pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit).")
+    cp = next(sc for sc in C.SCENARIOS if sc[0] == "Cost pressure")
+    renewals = listing(f"{pct(C.RENEWAL[c][0])} in {names[c]} from {fy27_months[C.RENEWAL[c][1] - 1]:%B}"
+                       for c in C.ENTITIES if C.RENEWAL[c][0])
+    add(f"- **Collective renewals and a stronger zloty would add {m(f['cost']['fy27_cost'] - base['fy27_cost'], 2)}**, "
+        f"to {m(f['cost']['fy27_cost'])}: renewals of {renewals}, and {cp[7]:.2f} zloty to the euro instead of "
+        f"{C.EUR_PLN}, which alone adds {m(f['fx_pl'], 2)} to Polish pay set in zloty.")
+    add(f"- **After {closed_to:%B}, FY2027 is heading for {m(os_all['outlook_payroll'])}, "
+        f"{m(os_all['variance'], 2)} {'over' if os_all['variance'] > 0 else 'under'} budget, for the wrong reasons.** "
+        f"{f['fte_gap']:,.0f} fewer FTE than planned on average save {m(-os_all['volume'], 2)}; a higher cost per "
+        f"FTE adds {m(os_all['rate'], 2)}, {pct(osum.loc['PL', 'rate'] / os_all['rate'], 0)} of it in Kraków. "
+        f"More leavers also lift recruitment to {m(os_all['outlook_hiring_cost'], 2)} "
+        f"({m(os_all['outlook_hiring_cost'] - os_all['budget_hiring_cost'], 2)} over budget).")
+    add(f"- **Landing on the June 2027 headcount plan, {os_all['plan_target']:,.0f} FTE, takes "
+        f"{f['plan_monthly']:,.0f} hires a month from {fy27_months[f['plan_first'] - 1]:%B}** and adds "
+        f"{m(os_all['plan_vs_outlook'], 2)} to the outlook's payroll: searches for those posts have to open now.")
     add("")
 
     add("## 1. FY2026: where the budget went")
@@ -215,7 +256,7 @@ def write(o: dict) -> dict:
         f"base, where the solidarity contribution takes over at a much lower rate.*")
     add("")
 
-    add("## 3. FY2027 under four scenarios")
+    add(f"## 3. FY2027 under {words.get(len(C.SCENARIOS), len(C.SCENARIOS))} scenarios")
     add("")
     add("![Scenario costs](figures/03_scenario_costs.svg)")
     add("")
@@ -229,7 +270,9 @@ def write(o: dict) -> dict:
     add("*People cost = payroll plus pay-equity remediation; hiring cost is shown apart. Scenario settings: "
         + "; ".join(f"{s[0]} - attrition x{s[1]}, replacement {pct(s[2], 0)}, growth x{s[3]}"
                     + (f", freeze from month {s[4]}" if s[4] else "")
-                    + (f", remediation from month {s[5]}" if s[5] else "") for s in C.SCENARIOS) + ".*")
+                    + (f", remediation from month {s[5]}" if s[5] else "")
+                    + (", collective renewals" if s[6] else "")
+                    + (f", {s[7]:.2f} PLN per euro" if s[7] != C.EUR_PLN else "") for s in C.SCENARIOS) + ".*")
     add("")
     add("![FTE paths](figures/04_fte_paths.svg)")
     add("")
@@ -238,7 +281,46 @@ def write(o: dict) -> dict:
         f"attrition adds about {k(hiring_per_point)} of recruitment cost at the assumed cost per hire.")
     add("")
 
-    add("## 4. Recommendations")
+    add(f"## 4. FY2027 after {closed_to:%B}: outlook against budget")
+    add("")
+    add("![Outlook against budget](figures/05_outlook_bridge.svg)")
+    add("")
+    add(table(["Employer", "Budget", f"July-{closed_to:%B}: actual against budget", "Outlook", "Variance", "Volume",
+               "Rate", "Hiring cost, outlook (against budget)"],
+              [[C.ENTITIES[c], m(v.budget_payroll), ms(v.ytd_actual - v.ytd_budget), m(v.outlook_payroll),
+                f"{ms(v.variance)} ({signed(v.variance / v.budget_payroll)})", ms(v.volume), ms(v.rate),
+                f"{m(v.outlook_hiring_cost, 2)} ({ms(v.outlook_hiring_cost - v.budget_hiring_cost)})"]
+               for c, v in osum.iterrows()], "lrrrrrrr"))
+    add("")
+    add(f"*Budget: the base case approved in June 2026. Outlook: actuals to {closed_to:%B}, then the base case's "
+        "rules from where the year has got to, with the closed months' attrition and the last month's cost per FTE "
+        f"(4+8). The {f['k']} closed months are synthetic: Customer Service losing "
+        f"{pct(C.YTD_ATTRITION_X['Customer Service'] - 1, 0)} more people than in FY2026, Tech hiring "
+        f"{pct(C.YTD_GROWTH_FILL['Tech'], 0)} of its planned growth, pay in Kraków drifting "
+        f"{pct(C.YTD_PAY_DRIFT['PL'])} above June. The variance splits like FY2026's: volume at budget cost per FTE, "
+        "rate at outlook FTE.*")
+    add("")
+
+    add("## 5. The headcount plan")
+    add("")
+    pcells = f["plan_cells"]
+    add(table(["Employer", "Target, June 2027", "Outlook, June 2027", "Plan hires a month", "Hires in FY2027",
+               "Hiring cost", "Payroll against outlook"],
+              [[C.ENTITIES[c], f"{v.plan_target:,.0f}", f"{v.outlook_closing:,.0f}",
+                f"{pcells.loc[pcells['country'] == c, 'monthly_hires'].sum():,.1f}", f"{v.plan_hires:,.0f}",
+                m(v.plan_hiring_cost, 2), ms(v.plan_vs_outlook)] for c, v in osum.iterrows()], "lrrrrrr"))
+    add("")
+    biggest = pcells.sort_values("monthly_hires", ascending=False).head(3)
+    add(f"*Targets against June 2026: "
+        + listing(f"{d} {signed(g, 0)}" for d, g in C.PLAN_TARGET.items() if g) + ", the rest flat (illustrative). "
+        f"Searches opened after the {closed_to:%B} close fill posts {C.TIME_TO_HIRE} months later; until then the "
+        "outlook's backfills arrive. From then, the same hires each month: (target - FTE × q^n) × a / (1 - q^n), "
+        "with a the monthly attrition, q = 1 - a and n the months left. The largest asks: "
+        + listing(f"{t.department} in {names[t.country]}, {t.monthly_hires:.1f} a month" for t in biggest.itertuples())
+        + ".*")
+    add("")
+
+    add("## 6. Recommendations")
     add("")
     add(f"1. **Set the FY2027 budget at the base case plus pay-equity remediation, {m(equity['fy27_cost'])}.** "
         "The first pay-transparency reports cover 2026 pay and are due in June 2027; gaps that are neither "
@@ -252,9 +334,13 @@ def write(o: dict) -> dict:
     add("5. **Replace the illustrative rates with the payroll provider's:** other INPS contributions and INAIL, "
         "the Polish accident rate, PPK participation, the German insurer's additional contribution and accident "
         "rate, the Spanish AT/EP tariff, and cost per hire.")
+    add(f"6. **Re-forecast every month from the run-rate.** After {closed_to:%B} the year is close to budget only "
+        "because vacancies hide a rising cost per FTE; Kraków's pay drift needs an answer before the January review.")
+    add(f"7. **Open the plan's searches now.** A post opened after the {closed_to:%B} close is filled in "
+        f"{fy27_months[f['plan_first'] - 1]:%B} at the earliest.")
     add("")
 
-    add("## 5. Method and limits")
+    add("## 7. Method and limits")
     add("")
     add("- **Two engines, one answer.** Every figure is computed in pandas and again by live formulas in "
         "[the workbook](../deliverables/workforce_cost_model.xlsx); its Reconciliation sheet checks each pair, and "
@@ -264,6 +350,8 @@ def write(o: dict) -> dict:
     add("- **Simplifications, stated.** Salaries as at 30 June 2026 apply to every month; bonus is paid at target; "
         "TFR accrues on base pay; one cap and one exchange rate apply to the whole year; overtime, leave and "
         "benefits in kind are not modelled. Full list in [docs/method.md](../docs/method.md).")
+    add(f"- **Closed months are synthetic.** The July-{closed_to:%B} actuals are written by `src/ytd.py` from the "
+        "June 2026 population with drivers that depart from the plan on purpose; they show the method, not a fact.")
     add("- **Not payroll or tax advice.** Rates and caps carry their source and status in "
         "[docs/verification.md](../docs/verification.md).")
     add("")
@@ -275,7 +363,7 @@ def main() -> None:
     write(model.run())
     import report_html
     report_html.build()
-    print("memo -> reports/cfo_memo.md, reports/index.html, 4 figures")
+    print("memo -> reports/cfo_memo.md, reports/index.html, 5 figures")
 
 
 if __name__ == "__main__":

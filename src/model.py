@@ -7,6 +7,8 @@ build_workbook.py, written with the same order of operations so the two agree.
     budget()      the FY2026 plan
     variance()    FY2026 actual against budget: volume, mix and rate
     forecast()    FY2027 month by month, for each scenario
+    outlook()     FY2027 after the closed months: actuals so far, then a re-forecast from the run-rate (4+8)
+    plan()        the hires a month it takes to land on the June 2027 headcount target, and their cost
 """
 import calendar
 import hashlib
@@ -16,6 +18,7 @@ import pandas as pd
 
 import config as C
 import employer_cost as E
+import ytd
 
 FAR_FUTURE = pd.Timestamp("2099-12-31")
 
@@ -168,14 +171,27 @@ def loaded_factor(country: str) -> float:
     raise ValueError(f"no employer-cost rules for {country}")
 
 
+def fx_factor(country: str, eur_pln: float) -> float:
+    """Polish pay is set in zloty: its euro cost scales with the exchange rate (every Polish rule is in PLN)."""
+    return C.EUR_PLN / eur_pln if country == "PL" else 1.0
+
+
+def renewal(country: str, on: int) -> tuple[float, int]:
+    """The entity's collective rise and its first month, or no rise when the scenario leaves renewals off."""
+    rise, month = C.RENEWAL[country]
+    return (rise, month) if on else (0.0, month)
+
+
 def forecast(r: pd.DataFrame, act: pd.DataFrame, scenario: tuple) -> tuple[pd.DataFrame, pd.DataFrame]:
-    name, att_x, repl, growth_x, freeze_from, rem_from = scenario
+    name, att_x, repl, growth_x, freeze_from, rem_from, renew, eur_pln = scenario
     start = opening(r, CLOSING)
     attr = attrition(r, act).set_index(["country", "department"])
     rows = []
     for s in start.itertuples(index=False):
         a = attr.loc[(s.country, s.department), "rate"] * att_x / 12
         g = C.FORECAST_GROWTH[s.department] * growth_x
+        fx = fx_factor(s.country, eur_pln)
+        rise, rise_from = renewal(s.country, renew)
         fte_prev, leavers_hist = s.fte, []
         for m in range(1, C.MONTHS + 1):
             leavers = fte_prev * a
@@ -183,7 +199,8 @@ def forecast(r: pd.DataFrame, act: pd.DataFrame, scenario: tuple) -> tuple[pd.Da
             frozen = freeze_from > 0 and m >= freeze_from
             hires = 0.0 if frozen else backfill_base * repl + s.fte * g / 12
             fte = fte_prev - leavers + hires
-            rate = s.rate * (1 + C.MERIT[s.country] * (m >= C.MERIT_MONTH))
+            rate = (s.rate * fx * (1 + C.MERIT[s.country] * (m >= C.MERIT_MONTH))
+                    * (1 + rise * (rise_from > 0 and m >= rise_from)))
             rows.append({"scenario": name, "country": s.country, "department": s.department, "month": m,
                          "leavers": leavers, "hires": hires, "fte": fte, "cost": fte * rate / 12,
                          "hiring_cost": hires * C.COST_PER_HIRE[s.country]})
@@ -191,7 +208,7 @@ def forecast(r: pd.DataFrame, act: pd.DataFrame, scenario: tuple) -> tuple[pd.Da
             fte_prev = fte
     f = pd.DataFrame(rows)
     rem = pd.DataFrame([{"scenario": name, "country": c, "month": m,
-                         "remediation": (C.REMEDIATION[c] * loaded_factor(c) / 12
+                         "remediation": (C.REMEDIATION[c] * loaded_factor(c) * fx_factor(c, eur_pln) / 12
                                          if rem_from > 0 and m >= rem_from else 0.0)}
                         for c in C.ENTITIES for m in range(1, C.MONTHS + 1)])
     return f, rem
@@ -226,6 +243,113 @@ def summary(act: pd.DataFrame, forecasts: dict) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def outlook(r: pd.DataFrame, act: pd.DataFrame, closed: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """FY2027 as it stands after the closed months: actuals for those, then the base case's rules from where the
+    year has got to. Attrition is the closed months' (leavers over FTE, a month), cost per FTE the last closed
+    month's run-rate, still due the pay review. With no closed months it is the base case."""
+    k = int(closed["month"].max()) if len(closed) else 0
+    _, att_x, repl, growth_x = C.SCENARIOS[0][:4]
+    start = opening(r, CLOSING)
+    attr = attrition(r, act).set_index(["country", "department"])
+    rows, cells = [], []
+    for s in start.itertuples(index=False):
+        y = closed[(closed["country"] == s.country) & (closed["department"] == s.department)].set_index("month")
+        if k > 0:
+            a = y["leavers"].sum() / y["fte"].sum()
+            rate0 = y.loc[k, "cost"] * 12 / y.loc[k, "fte"]
+        else:
+            a = attr.loc[(s.country, s.department), "rate"] * att_x / 12
+            rate0 = s.rate
+        g = C.FORECAST_GROWTH[s.department] * growth_x
+        merit = C.MERIT[s.country]
+        cells.append({"country": s.country, "department": s.department, "opening": s.fte, "attrition": a,
+                      "rate0": rate0})
+        prev, hist = s.fte, []
+        for m in range(1, C.MONTHS + 1):
+            if m <= k:
+                leavers, hires, fte, cost = (y.loc[m, x] for x in ("leavers", "hires", "fte", "cost"))
+            else:
+                leavers = prev * a
+                backfill = hist[m - 1 - C.TIME_TO_HIRE] if m > C.TIME_TO_HIRE else s.fte * a
+                hires = backfill * repl + s.fte * g / 12
+                fte = prev - leavers + hires
+                cost = fte * (rate0 * (1 + merit * (m >= C.MERIT_MONTH)) / (1 + merit * (k >= C.MERIT_MONTH))) / 12
+            rows.append({"country": s.country, "department": s.department, "month": m, "actual": m <= k,
+                         "leavers": leavers, "hires": hires, "fte": fte, "cost": cost,
+                         "hiring_cost": hires * C.COST_PER_HIRE[s.country]})
+            hist.append(leavers)
+            prev = fte
+    return pd.DataFrame(rows), pd.DataFrame(cells)
+
+
+def plan(out_months: pd.DataFrame, out_cells: pd.DataFrame, k: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """The headcount plan: the same steady number of hires each month, from the first month a search started now
+    can fill (after the closed months and the time to hire), that lands each cell on its June 2027 target.
+    Until then the outlook's hires, already in the pipeline. With attrition a and q = 1 - a, n months from FTE F:
+    F x q^n + h x (1 - q^n) / a = target, so h = (target - F x q^n) x a / (1 - q^n); none if the cell
+    would close at or above its target without hiring."""
+    p = k + C.TIME_TO_HIRE
+    n = C.MONTHS - p
+    om = out_months.set_index(["country", "department", "month"])
+    rows, cells = [], []
+    for c in out_cells.itertuples(index=False):
+        target = c.opening * (1 + C.PLAN_TARGET[c.department])
+        a = c.attrition
+        f_p = om.loc[(c.country, c.department, min(p, C.MONTHS)), "fte"] if p > 0 else c.opening
+        if n <= 0:
+            h = 0.0
+        elif a > 0:
+            h = max(0.0, (target - f_p * (1 - a) ** n) * a / (1 - (1 - a) ** n))
+        else:
+            h = max(0.0, (target - f_p) / n)
+        merit = C.MERIT[c.country]
+        cells.append({"country": c.country, "department": c.department, "target": target, "monthly_hires": h,
+                      "first_month": p + 1})
+        prev = c.opening
+        for m in range(1, C.MONTHS + 1):
+            o = om.loc[(c.country, c.department, m)]
+            if m <= p:
+                leavers, hires, fte, cost = o["leavers"], o["hires"], o["fte"], o["cost"]
+            else:
+                leavers = prev * a
+                hires = h
+                fte = prev - leavers + hires
+                cost = fte * (c.rate0 * (1 + merit * (m >= C.MERIT_MONTH)) / (1 + merit * (k >= C.MERIT_MONTH))) / 12
+            rows.append({"country": c.country, "department": c.department, "month": m, "leavers": leavers,
+                         "hires": hires, "fte": fte, "cost": cost, "hiring_cost": hires * C.COST_PER_HIRE[c.country]})
+            prev = fte
+    return pd.DataFrame(rows), pd.DataFrame(cells)
+
+
+def outlook_summary(budget27: pd.DataFrame, out_months: pd.DataFrame, plan_months: pd.DataFrame,
+                    plan_cells: pd.DataFrame, k: int) -> pd.DataFrame:
+    """By entity: the FY2027 budget (the base case approved in June 2026), the outlook and the variance between
+    them, split into volume and rate as for FY2026; then what the headcount plan adds to the outlook."""
+    rows = []
+    for c in C.ENTITIES:
+        b, o, pl = (x[x["country"] == c] for x in (budget27, out_months, plan_months))
+        b_fte = b.groupby("month")["fte"].sum().mean()
+        o_fte = o.groupby("month")["fte"].sum().mean()
+        p_fte = pl.groupby("month")["fte"].sum().mean()
+        b_cost, o_cost, p_cost = b["cost"].sum(), o["cost"].sum(), pl["cost"].sum()
+        b_rate, o_rate = b_cost / b_fte, o_cost / o_fte
+        rows.append({
+            "country": c, "budget_fte": b_fte, "budget_payroll": b_cost,
+            "budget_closing": b.loc[b["month"] == C.MONTHS, "fte"].sum(),
+            "budget_hiring_cost": b["hiring_cost"].sum(),
+            "ytd_budget": b.loc[b["month"] <= k, "cost"].sum(), "ytd_actual": o.loc[o["month"] <= k, "cost"].sum(),
+            "outlook_fte": o_fte, "outlook_payroll": o_cost,
+            "outlook_closing": o.loc[o["month"] == C.MONTHS, "fte"].sum(),
+            "outlook_hiring_cost": o["hiring_cost"].sum(),
+            "variance": o_cost - b_cost, "volume": (o_fte - b_fte) * b_rate, "rate": (o_rate - b_rate) * o_fte,
+            "plan_target": plan_cells.loc[plan_cells["country"] == c, "target"].sum(),
+            "plan_closing": pl.loc[pl["month"] == C.MONTHS, "fte"].sum(), "plan_fte": p_fte,
+            "plan_hires": pl["hires"].sum(), "plan_hiring_cost": pl["hiring_cost"].sum(), "plan_payroll": p_cost,
+            "plan_vs_outlook": p_cost - o_cost,
+        })
+    return pd.DataFrame(rows)
+
+
 def run(r: pd.DataFrame | None = None) -> dict:
     """The whole model; pass a subset of roster() to run it on a sample."""
     r = roster() if r is None else r.reset_index(drop=True)
@@ -233,9 +357,17 @@ def run(r: pd.DataFrame | None = None) -> dict:
     bud = budget(r)
     var_dept, var_entity = variance(act, bud)
     forecasts = {s[0]: forecast(r, act, s) for s in C.SCENARIOS}
+    start = opening(r, CLOSING)
+    closed = ytd.actuals(start, attrition(r, act))
+    k = int(closed["month"].max()) if len(closed) else 0
+    out_months, out_cells = outlook(r, act, closed)
+    plan_months, plan_cells = plan(out_months, out_cells, k)
     return {
+        "ytd": closed, "outlook": out_months, "outlook_cells": out_cells, "plan": plan_months,
+        "plan_cells": plan_cells,
+        "outlook_summary": outlook_summary(forecasts[C.SCENARIOS[0][0]][0], out_months, plan_months, plan_cells, k),
         "roster": r, "actuals": act, "budget": bud,
         "variance_dept": var_dept, "variance_entity": var_entity,
-        "attrition": attrition(r, act), "start": opening(r, CLOSING),
+        "attrition": attrition(r, act), "start": start,
         "forecasts": forecasts, "summary": summary(act, forecasts),
     }

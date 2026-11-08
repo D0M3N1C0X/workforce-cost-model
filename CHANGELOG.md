@@ -4,6 +4,29 @@ What changed in each release. Format: [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-08
+
+### Added
+
+- **Two new levers: collective renewals and the zloty.** Each entity has a renewal (rise and first month) that
+  scenarios switch on; Polish pay, set in zloty, follows each scenario's EUR/PLN rate. A fifth scenario, *Cost
+  pressure*, combines both: FY2027 €197.3M, €4.45M above the base case, €3.12M of it from the exchange rate.
+- **The 4+8 outlook.** Four closed months of FY2027 (synthetic, written by `src/ytd.py`) and a re-forecast from
+  their attrition and run-rate, against the budget: €193.1M, €0.18M over, with €0.60M less from volume and €0.77M
+  more from cost per FTE. New sheets *Actuals FY27*, *Outlook FY27* and *Outlook vs budget*; the number of closed
+  months is counted from the data, so adding a month rolls the outlook forward.
+- **The headcount plan.** A June 2027 target by department becomes the same hires each month once a search opened
+  now can fill a post, solved in closed form: 64 hires a month from January, €1.15M on top of the outlook. New
+  sheet *Plan FY27*.
+- Simulator: renewal and exchange-rate levers, the *Cost pressure* preset, and an *Outlook and hiring plan* view with
+  editable targets, for the sample company and for a client's own staff. The JavaScript engine gains `outlook()`,
+  `plan()` and `outlookSummary()`, checked against the model on 43,152 values (was 18,919).
+- CFO memo: the outlook against budget with a fifth chart, the headcount plan, two recommendations.
+
+### Changed
+
+- The workbook has 20 sheets and 1649 reconciliation checks (was 14 and 1086).
+
 ## [2.0.0] - 2026-11-06
 
 ### Added
