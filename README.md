@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="site-assets/cover-dark.png">
-  <img alt="What will next year's people cost be? €111.0M in FY2027's base case, €5.8M over budget in FY2026, €59,382 a fully loaded FTE in Milan." src="site-assets/cover-light.png">
+  <img alt="What will next year's people cost be? €192.9M in FY2027's base case, €9.9M over budget in FY2026, 64 hires a month from January to land on the June 2027 headcount plan." src="site-assets/cover-light.png">
 </picture>
 
 <p align="center">
