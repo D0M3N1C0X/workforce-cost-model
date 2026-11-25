@@ -1,5 +1,5 @@
 """
-Five SVG charts for the memo, hand-written like the ones in pay-transparency-readiness-kit:
+Six SVG charts for the memo, hand-written like the ones in pay-transparency-readiness-kit:
 validated reference palette, light and dark steps inside each file, a <title> on every mark.
 """
 from html import escape
@@ -172,4 +172,38 @@ def fte_paths(months, actual, scenarios, title):
         body.append(f'<circle cx="{x(n - 1):.1f}" cy="{y(v):.1f}" r="4" fill="var({c})" stroke="var(--surface)" stroke-width="2"/>')
         body.append(f'<text x="{x(n - 1) + 10:.1f}" y="{yy + 4:.1f}" class="val">{v:,.0f}</text>')
         last_y = yy
+    return _svg(W, H, body, title)
+
+
+def forecast_errors(ahead, series, title, subtitle):
+    """ahead: months ahead; series: {name: mean absolute error per horizon}. Lines, lower is better."""
+    W, H, L, R, T, B = 720, 330, 60, 120, 92, 44
+    allv = [v for s in series.values() for v in s]
+    hi = max(0.08, (int(max(allv) * 100) + 1) / 100)
+    x = _scale(min(ahead), max(ahead), L, W - R)
+    y = _scale(0, hi, H - B, T)
+    colours = ["--s1", "--s2", "--muted"]
+    body = [f'<text x="24" y="34" class="title">{escape(title)}</text>', f'<text x="24" y="54">{escape(subtitle)}</text>']
+    lx = L
+    for (name, _), c in zip(series.items(), colours):
+        body.append(f'<rect x="{lx}" y="66" width="18" height="3" fill="var({c})"/><text x="{lx + 24}" y="71">{escape(name)}</text>')
+        lx += 40 + 7 * len(name)
+    step = 0.01 if hi <= 0.08 else 0.02
+    v = 0.0
+    while v <= hi + 1e-9:
+        body.append(f'<line x1="{L}" x2="{W - R}" y1="{y(v):.1f}" y2="{y(v):.1f}" stroke="var(--grid)"/>')
+        body.append(f'<text x="{L - 8}" y="{y(v) + 4:.1f}" text-anchor="end" class="muted">{v * 100:.0f}%</text>')
+        v = round(v + step, 10)
+    for a in ahead:
+        body.append(f'<text x="{x(a):.1f}" y="{H - 22}" text-anchor="middle" class="muted">{a}</text>')
+    body.append(f'<text x="{(L + W - R) / 2:.1f}" y="{H - 6}" text-anchor="middle" class="muted">months ahead</text>')
+    for (name, vals), c in zip(series.items(), colours):
+        body.append(f'<path d="{_path([(x(a), y(v)) for a, v in zip(ahead, vals)])}" fill="none" stroke="var({c})" '
+                    'stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>')
+        for a, v in zip(ahead, vals):
+            body.append(f'<circle cx="{x(a):.1f}" cy="{y(v):.1f}" r="7" fill="transparent">'
+                        f'<title>{escape(name)}, {a} months ahead: {v * 100:.1f}% off on average</title></circle>')
+        e = len(vals) - 1
+        body.append(f'<circle cx="{x(ahead[e]):.1f}" cy="{y(vals[e]):.1f}" r="4" fill="var({c})" stroke="var(--surface)" stroke-width="2"/>')
+        body.append(f'<text x="{x(ahead[e]) + 10:.1f}" y="{y(vals[e]) + 4:.1f}" class="val">{vals[e] * 100:.1f}%</text>')
     return _svg(W, H, body, title)

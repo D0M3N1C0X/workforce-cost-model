@@ -38,7 +38,7 @@ once the year is under way, where is it heading and how many people do we have t
 | **FY2027 costs €192.9M in the base case (+4.0%)**: more FTE and the January pay review. | **A hiring freeze from October cuts it to €182.6M**, but the year ends with 411 fewer FTE than the base case: a capacity decision, not a finance one. |
 | **Higher attrition barely moves payroll** but lifts recruitment cost to €2.49M. | **Closing pay gaps from January 2027 adds €1.23M** to FY2027 and €2.46M a year after, using the gaps found by [pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit). |
 | **Collective renewals and a stronger zloty add €4.45M**, to €197.3M; the exchange rate alone adds €3.12M to Polish pay set in zloty. | **After October, FY2027 is heading for €193.1M, €0.18M over budget, for the wrong reasons**: 10 fewer FTE than planned save €0.60M, a higher cost per FTE adds €0.77M, most of it in Kraków. |
-| **Landing on the June 2027 headcount plan takes 64 hires a month from January** and adds €1.15M to the outlook's payroll. | |
+| **Landing on the June 2027 headcount plan takes 64 hires a month from January** and adds €1.15M to the outlook's payroll. | **Read FY2027 as a range: €184.4M to €207.0M.** Run month by month through FY2026, the forecast's rules were 0.7% off a month ahead and 4.4% nine months ahead: far better than the budget, barely better than the last month carried forward. Hiring, not leavers, moves this payroll. |
 
 <img alt="Volume explains the FY2026 overrun" src="reports/figures/02_variance_bridge.svg" width="100%">
 
@@ -58,7 +58,7 @@ leaves the computer, and it also tells you what one employee costs in Italy, Pol
 |---|---|---|
 | [`workforce_cost_model.xlsx`](deliverables/workforce_cost_model.xlsx) | the finance team | Twenty sheets: dashboard with a scenario picker, scenario summary and bridge, the FY2027 outlook against budget, FY2026 variance, actuals and budget, FY2027 drivers, one forecast sheet per scenario, the closed months of FY2027, the outlook and the headcount plan month by month, the employee roster, settings and a reconciliation sheet. **Every figure is a live formula**: change a contribution rate, an attrition multiplier or a hiring-freeze month and the model recalculates. |
 | [Scenario simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/) | the HR business partner and finance, in the budget meeting | Levers for leavers, backfills, growth, a hiring freeze, the pay review, collective renewals, the zloty and closing pay gaps; FY2027 month by month, the bridge and the sentence for the CFO; up to five scenarios side by side; an Excel download; the outlook after the closed months and the hires a month a headcount target takes. Runs on the sample company or on a client's own staff list, and **the file never leaves the computer**. Also: what one employee costs in Italy, Poland, Germany and Spain, item by item. English and Italian. |
-| [`cfo_memo.md`](reports/cfo_memo.md) | the finance director | Answer first: where the FY2026 budget went, what an employee costs in each country, FY2027 under five scenarios, the outlook after October against budget, the headcount plan, seven recommendations, method and limits. |
+| [`cfo_memo.md`](reports/cfo_memo.md) | the finance director | Answer first: where the FY2026 budget went, what an employee costs in each country, FY2027 under five scenarios, how far the forecast can be trusted, the outlook after October against budget, the headcount plan, eight recommendations, method and limits. |
 | [`docs/method.md`](docs/method.md) · [`docs/verification.md`](docs/verification.md) | reviewers | Every formula and simplification; the source and status of every rate and cap. |
 
 ## The judgement calls
@@ -131,11 +131,12 @@ The reconciliation check, the LibreOffice recalculation and the byte-stable work
 │   ├── config.py                every rate, cap and assumption, with its source
 │   ├── model.py                 roster, actuals, budget, variance, forecast, bridge, outlook, plan
 │   ├── ytd.py                   the closed months of FY2027 (synthetic)
+│   ├── backtest.py              the forecast run as if before the months it forecasts, and its interval
 │   ├── build_workbook.py        the Excel model and its reconciliation sheet
 │   ├── check_workbook.py        proves the formulas reproduce pandas
 │   ├── recalc_libreoffice.py    recalculates the workbook headless, for CI
 │   ├── build_memo.py            the memo and its figures
-│   ├── charts.py                five SVG charts in the portfolio identity, light and dark
+│   ├── charts.py                six SVG charts in the portfolio identity, light and dark
 │   ├── report_html.py           the memo as one HTML page
 │   ├── deterministic.py         byte-stable Office files
 │   └── run_all.py               the whole pipeline

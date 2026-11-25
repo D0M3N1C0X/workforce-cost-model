@@ -4,6 +4,7 @@ Every figure comes from model.run(), the same results the workbook reconciles ag
 """
 import pandas as pd
 
+import backtest
 import charts
 import config as C
 import model
@@ -170,6 +171,12 @@ def write(o: dict) -> dict:
     add(f"- **FY2027 costs {m(base['fy27_cost'])} in the base case ({signed(base['fy27_cost'] / fy26_total - 1)}).** "
         f"More FTE add {m(base_bridge['bridge_volume'])}: the year opens with the headcount FY2026 closed on, and "
         f"{listing(growing)} keep growing. Cost per FTE adds {m(base_bridge['bridge_rate'])}, {rate_story}.")
+    bt0 = backtest.backtest(o["roster"])["ahead"]
+    iv0 = backtest.fy2027_interval(o["roster"])
+    add(f"- **Read it as a range: {m(iv0['pace_low'])} to {m(iv0['pace_high'])}.** Run month by month through "
+        f"FY2026, the same rules were {pct(bt0['mape_model'].iloc[0])} off a month ahead and "
+        f"{pct(bt0['mape_model'].iloc[-1])} nine months ahead, far closer than the budget but barely better than "
+        "carrying the last month forward: hiring, not leavers, moves this payroll (section 4).")
     add(f"- **A hiring freeze from {fy27_months[freeze_from - 1]:%B} would cut FY2027 to {m(freeze['fy27_cost'])}** "
         f"({signed(freeze['fy27_cost'] / fy26_total - 1)}), but the year would close with "
         f"{base['closing_fte'] - freeze['closing_fte']:,.0f} fewer FTE than the base case: a capacity decision, "
@@ -281,7 +288,57 @@ def write(o: dict) -> dict:
         f"attrition adds about {k(hiring_per_point)} of recruitment cost at the assumed cost per hire.")
     add("")
 
-    add(f"## 4. FY2027 after {closed_to:%B}: outlook against budget")
+    bt = backtest.backtest(o["roster"])
+    iv = backtest.fy2027_interval(o["roster"])
+    org, ah = bt["origins"], bt["ahead"]
+    (FIG / "06_forecast_errors.svg").write_text(charts.forecast_errors(
+        list(ah["ahead"]), {"Forecast rules": list(ah["mape_model"]), "Last month carried forward": list(ah["mape_naive"]),
+                            "Budget": list(ah["mape_budget"])},
+        "The rules beat the budget easily, the last month barely",
+        "Mean absolute error of the FY2026 payroll forecast, by months ahead, over every month-end from September"))
+    under = int((org["err_model"] < 0).sum())
+    add("## 4. How far the forecast can be trusted")
+    add("")
+    add(f"A forecast is only worth what it would have got right. So the base case's rules were run at the end of every "
+        f"month of FY2026 from {model.FY26[backtest.FIRST_ORIGIN - 1]:%B %Y}, with only what was known that day: the "
+        "leavers so far, the cost per FTE of the people then on the payroll, the growth in the budget then in force. "
+        "Each run is set against the months that followed, and against two forecasts anyone could make: the last "
+        "month carried forward, and the budget.")
+    add("")
+    add("![Forecast errors by months ahead](figures/06_forecast_errors.svg)")
+    add("")
+    one, last = ah.iloc[0], ah.iloc[-1]
+    add(f"- **The rules are {pct(one['mape_model'])} off one month ahead and {pct(last['mape_model'])} off "
+        f"{int(last['ahead'])} months ahead.** The budget is {pct(ah['mape_budget'].min())} to "
+        f"{pct(ah['mape_budget'].max())} off at every distance: it was set for a company that was not going to grow "
+        "as fast as this one did.")
+    add(f"- **They beat the last month carried forward, but only just** ({pct(one['mape_naive'])} and "
+        f"{pct(last['mape_naive'])}). Leavers and backfills are not what moves this payroll: hiring is.")
+    add(f"- **{under} of {len(org)} runs came in under what happened**, all of them from origins before "
+        f"{model.FY26[int(org.loc[org['err_model'] >= 0, 'origin'].min()) - 1]:%B}: the company hired for months at "
+        "about twice what its rules expect, then slowed. A forecast that only replaces leavers cannot see that "
+        "coming.")
+    add(f"- **An interval that only counts who leaves is false comfort.** Simulating every person's chance of "
+        f"leaving, with the uncertainty on the rate itself, gives intervals of a few tenths of a percent; the months "
+        f"that followed fell inside {int(org['inside'].sum())} of {len(org)}. Adding how far hiring strayed from the "
+        f"rules in the months seen so far brings it to {int(org['inside_pace'].sum())} of {len(org)}, with every miss "
+        "on the long runs, where a hiring surplus has months to build up.")
+    add(f"- **So FY2027 is {m(iv['central'])}, and a fair 90% range is {m(iv['pace_low'])} to "
+        f"{m(iv['pace_high'])}**, wider above than below: hiring can overshoot the rules by more than it can fall "
+        "short of them. Counting leavers alone would say "
+        f"{m(iv['low'])} to {m(iv['high'])}: too narrow to budget on, as the backtest shows. Even the wider range "
+        "missed the longest runs, so read it as a floor on the uncertainty, not a ceiling.")
+    add("")
+    add(f"*Backtest: the base case's rules (attrition from the leavers so far, annualised; {pct(0.90, 0)} of leavers "
+        f"replaced after {C.TIME_TO_HIRE} months; budget growth) from each month-end to June 2026; actuals are the "
+        "source organisation's own months, with every person on the same pay rate all year. Interval: "
+        f"{backtest.DRAWS:,} simulations per run; each month every person leaves with the cell's probability, drawn "
+        "from a gamma posterior on the leavers so far; with hiring pace, each simulated year hires at a multiple of "
+        "the rules drawn from the spread of actual against rule hires in the months seen so far. Code: "
+        "src/backtest.py.*")
+    add("")
+
+    add(f"## 5. FY2027 after {closed_to:%B}: outlook against budget")
     add("")
     add("![Outlook against budget](figures/05_outlook_bridge.svg)")
     add("")
@@ -301,7 +358,7 @@ def write(o: dict) -> dict:
         "rate at outlook FTE.*")
     add("")
 
-    add("## 5. The headcount plan")
+    add("## 6. The headcount plan")
     add("")
     pcells = f["plan_cells"]
     add(table(["Employer", "Target, June 2027", "Outlook, June 2027", "Plan hires a month", "Hires in FY2027",
@@ -320,7 +377,7 @@ def write(o: dict) -> dict:
         + ".*")
     add("")
 
-    add("## 6. Recommendations")
+    add("## 7. Recommendations")
     add("")
     add(f"1. **Set the FY2027 budget at the base case plus pay-equity remediation, {m(equity['fy27_cost'])}.** "
         "The first pay-transparency reports cover 2026 pay and are due in June 2027; gaps that are neither "
@@ -338,9 +395,11 @@ def write(o: dict) -> dict:
         "because vacancies hide a rising cost per FTE; Kraków's pay drift needs an answer before the January review.")
     add(f"7. **Open the plan's searches now.** A post opened after the {closed_to:%B} close is filled in "
         f"{fy27_months[f['plan_first'] - 1]:%B} at the earliest.")
+    add(f"8. **Budget a range, not a point: {m(iv['pace_low'])} to {m(iv['pace_high'])} for FY2027.** Hiring "
+        "pace, not attrition, decides where in it the year lands; review it with the monthly re-forecast.")
     add("")
 
-    add("## 7. Method and limits")
+    add("## 8. Method and limits")
     add("")
     add("- **Two engines, one answer.** Every figure is computed in pandas and again by live formulas in "
         "[the workbook](../deliverables/workforce_cost_model.xlsx); its Reconciliation sheet checks each pair, and "
