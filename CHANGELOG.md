@@ -6,6 +6,11 @@ What changed in each release. Format: [Keep a Changelog](https://keepachangelog.
 
 ### Added
 
+- **A Backtest sheet in the workbook**: the forecast run at each FY2026 month end, with actual, last month carried
+  forward and budget live from Actuals FY26 and Budget FY26, the errors and the coverage counts as formulas, and
+  the FY2027 range. Reconciliation checks: 1,649 → 1,696, all matching after a LibreOffice recalculation. New
+  cover and a simulator loop that now shows the outlook and plan view and the cost of one employee too.
+
 - **The forecast put to the test** (memo section 4, `src/backtest.py`): the base case's rules run at every FY2026
   month-end from September 2025 with only what was known then, against what happened, the month carried forward
   and the budget. 0.7% off a month ahead and 4.4% nine months ahead, against 6.2-7.0% for the budget but barely

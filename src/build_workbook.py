@@ -21,6 +21,7 @@ from openpyxl.utils import get_column_letter as col
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.worksheet.hyperlink import Hyperlink
 
+import backtest
 import config as C
 import model
 from deterministic import normalise
@@ -130,7 +131,7 @@ class Model:
         wb = self.wb
         names = ["Cover", "Dashboard", "Scenarios", "Outlook vs budget", "Variance FY26", "Actuals FY26",
                  "Budget FY26", "Drivers FY27", *self.sheet_of.values(), "Actuals FY27", "Outlook FY27", "Plan FY27",
-                 "Roster", "Settings", "Reconciliation"]
+                 "Backtest", "Roster", "Settings", "Reconciliation"]
         wb.active.title = names[0]
         for n in names[1:]:
             wb.create_sheet(n)
@@ -145,6 +146,7 @@ class Model:
         self.ytd_sheet(wb["Actuals FY27"])
         self.outlook(wb["Outlook FY27"])
         self.plan(wb["Plan FY27"])
+        self.backtest_sheet(wb["Backtest"])
         self.outlook_summary(wb["Outlook vs budget"])
         self.scenarios(wb["Scenarios"])
         self.dashboard(wb["Dashboard"])
@@ -1140,6 +1142,78 @@ class Model:
             s_.graphicalProperties.solidFill = c_
         ws.add_chart(bar, "G22")
 
+    def backtest_sheet(self, ws):
+        """The forecast run at each FY2026 month-end against what followed: actual, naive and budget live from the
+        Actuals and Budget sheets; the rules' forecast and the interval from the pipeline's simulation (blue)."""
+        b = backtest.backtest(self.r)
+        iv = backtest.fy2027_interval(self.r)
+        o = b["origins"].set_index("origin")
+        title(ws, "How far the forecast can be trusted: FY2026 run month by month",
+              "At each month end the forecast's rules ran with only what was known that day. Actual, last month "
+              "carried forward and budget are live from Actuals FY26 and Budget FY26; the rules' forecast and the 90% "
+              "intervals come from src/backtest.py (blue).")
+        heads = ["Origin month", "Month end", "Months ahead", "Actual, remaining months", "Forecast rules",
+                 "Last month carried forward", "Budget", "Error: rules", "Error: last month", "Error: budget",
+                 "90% low, leavers only", "90% high, leavers only", "Inside?", "90% low, with hiring pace",
+                 "90% high, with hiring pace", "Inside?"]
+        header(ws, 4, heads, height=44)
+        widths(ws, {col(i): w for i, w in enumerate([8, 10, 8, 15, 15, 15, 15, 10, 10, 10, 15, 15, 8, 15, 15, 8],
+                                                     start=1)})
+        totals = [self.act_total[c] for c in C.ENTITIES]
+        bud_first, bud_last = min(self.bud_rows.values()), max(self.bud_rows.values())
+        first = 5
+        for i, k in enumerate(o.index):
+            r_ = first + i
+            x = o.loc[k]
+            put(ws, f"A{r_}", int(k), color=BLUE)
+            put(ws, f"B{r_}", f"=EOMONTH({self.refs['fy26_start']},A{r_}-1)", fmt=MONTH)
+            put(ws, f"C{r_}", f"={C.MONTHS}-A{r_}", fmt=COUNT)
+            ac0, ac1 = col(17 + int(k)), col(28)               # Actuals FY26 cost: month 1 is column Q
+            put(ws, f"D{r_}", "=" + "+".join(f"SUM('Actuals FY26'!{ac0}{t}:{ac1}{t})" for t in totals), fmt=EUR)
+            put(ws, f"E{r_}", float(x["model"]), color=BLUE, fmt=EUR)
+            last = col(16 + int(k))
+            put(ws, f"F{r_}", "=(" + "+".join(f"'Actuals FY26'!{last}{t}" for t in totals) + f")*C{r_}", fmt=EUR)
+            put(ws, f"G{r_}", f"=SUM('Budget FY26'!{col(20 + int(k))}{bud_first}:AE{bud_last})", fmt=EUR)
+            for j, src in zip("HIJ", "EFG", strict=True):
+                put(ws, f"{j}{r_}", f"={src}{r_}/D{r_}-1", fmt=PCT1)
+            put(ws, f"K{r_}", float(x["low"]), color=BLUE, fmt=EUR)
+            put(ws, f"L{r_}", float(x["high"]), color=BLUE, fmt=EUR)
+            put(ws, f"M{r_}", f'=IF(AND(D{r_}>=K{r_},D{r_}<=L{r_}),"Yes","No")')
+            put(ws, f"N{r_}", float(x["pace_low"]), color=BLUE, fmt=EUR)
+            put(ws, f"O{r_}", float(x["pace_high"]), color=BLUE, fmt=EUR)
+            put(ws, f"P{r_}", f'=IF(AND(D{r_}>=N{r_},D{r_}<=O{r_}),"Yes","No")')
+            self.check("Backtest", f"origin {k}: actual", x["actual"], f"Backtest!D{r_}")
+            self.check("Backtest", f"origin {k}: last month carried forward", x["naive"], f"Backtest!F{r_}")
+            self.check("Backtest", f"origin {k}: budget", x["budget"], f"Backtest!G{r_}")
+            self.check("Backtest", f"origin {k}: error, rules", x["err_model"], f"Backtest!H{r_}")
+            self.check("Backtest", f"origin {k}: inside, with hiring pace", "Yes" if x["inside_pace"] else "No",
+                       f"Backtest!P{r_}")
+        last_row = first + len(o) - 1
+        r_ = last_row + 2
+        put(ws, f"B{r_}", "Mean absolute error", bold=True)
+        for j in "HIJ":
+            put(ws, f"{j}{r_}", f"=SUMPRODUCT(ABS({j}{first}:{j}{last_row}))/COUNT({j}{first}:{j}{last_row})",
+                fmt=PCT1, bold=True)
+        put(ws, f"B{r_ + 1}", "Runs inside the interval", bold=True)
+        put(ws, f"M{r_ + 1}", f'=COUNTIF(M{first}:M{last_row},"Yes")&" of "&COUNTA(M{first}:M{last_row})', bold=True)
+        put(ws, f"P{r_ + 1}", f'=COUNTIF(P{first}:P{last_row},"Yes")&" of "&COUNTA(P{first}:P{last_row})', bold=True)
+        self.check("Backtest", "mean absolute error, rules", float(o["err_model"].abs().mean()), f"Backtest!H{r_}")
+        self.check("Backtest", "runs inside, with hiring pace",
+                   f"{int(o['inside_pace'].sum())} of {len(o)}", f"Backtest!P{r_ + 1}")
+        r_ += 3
+        put(ws, f"B{r_}", "FY2027, base case", bold=True, size=11)
+        rows = [("Central forecast", iv["central"]), ("90% range, leavers only: low", iv["low"]),
+                ("90% range, leavers only: high", iv["high"]), ("90% range, with hiring pace: low", iv["pace_low"]),
+                ("90% range, with hiring pace: high", iv["pace_high"])]
+        for i, (label, v) in enumerate(rows, start=r_ + 1):
+            put(ws, f"B{i}", label)
+            put(ws, f"D{i}", float(v), color=BLUE, fmt=EUR)
+        put(ws, f"B{r_ + 7}", "Error: forecast against actual, as a share of actual. The rules: attrition from the "
+                              "leavers so far, 90% of leavers replaced after the time to hire, budget growth. The "
+                              "ranges are a floor on the uncertainty: the hiring-pace interval still missed the "
+                              "longest runs.", color=MUTED, italic=True)
+        ws.freeze_panes = "D5"
+
     def reconciliation(self, ws):
         title(ws, "Reconciliation: workbook formulas against the Python pipeline",
               "Column D was written by src/build_workbook.py from the pandas results; column E is the live formula.")
@@ -1202,6 +1276,7 @@ class Model:
             "Actuals FY27": "The closed months of FY2027 (synthetic), as a payroll extract would give them.",
             "Outlook FY27": "Closed months, then the re-forecast from the run-rate.",
             "Plan FY27": "The hires a month it takes to land on the June 2027 headcount target.",
+            "Backtest": "The forecast run at each FY2026 month end against what followed, and the FY2027 range.",
         }
         for s in C.SCENARIOS:
             purpose[self.sheet_of[s[0]]] = f"FY2027 month by month under the '{s[0]}' scenario."

@@ -39,11 +39,12 @@ def known_at(r: pd.DataFrame, act: pd.DataFrame, k: int) -> pd.DataFrame:
         avg_fte = act.loc[(act["country"] == c) & (act["department"] == d) & (act["month"] <= k), "fte"].mean()
         people = int(a.sum())
         heads = [M.active(g, M.FY26[m]).sum() for m in range(k)]
-        rows.append({"country": c, "department": d, "people": people, "fte": g.loc[a, "fte"].sum(),
-                     "rate": g.loc[a, "loaded_cost"].sum() / g.loc[a, "fte"].sum(),
-                     "fte_per_head": g.loc[a, "fte"].sum() / people,
+        fte = g.loc[a, "fte"].sum()
+        rows.append({"country": c, "department": d, "people": people, "fte": fte,
+                     "rate": g.loc[a, "loaded_cost"].sum() / fte if fte else 0.0,      # an empty cell costs nothing
+                     "fte_per_head": fte / people if people else 0.0,
                      "leavers_fte": left["fte"].sum(), "leavers": len(left),
-                     "attrition": left["fte"].sum() / avg_fte * 12 / k,
+                     "attrition": left["fte"].sum() / avg_fte * 12 / k if avg_fte else 0.0,
                      "person_years": float(np.mean(heads)) * k / 12})
     return pd.DataFrame(rows)
 

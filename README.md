@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="site-assets/cover-dark.png">
-  <img alt="What will next year's people cost be? €192.9M in FY2027's base case, €9.9M over budget in FY2026, 64 hires a month from January to land on the June 2027 headcount plan." src="site-assets/cover-light.png">
+  <img alt="What will next year's people cost be? €192.9M in FY2027's base case, with a fair 90% range of €184.4M to €207.0M; the forecast 4.4% off nine months ahead when run through FY2026, against 6.4% for the budget; €9.9M over budget in FY2026." src="site-assets/cover-light.png">
 </picture>
 
 <p align="center">
@@ -50,13 +50,13 @@ and the sentence for the CFO, with up to five scenarios side by side. A second v
 closed months and turns a headcount target into hires a month. It runs on the sample company or on a client's own staff list, which never
 leaves the computer, and it also tells you what one employee costs in Italy, Poland, Germany and Spain, item by item.
 
-<p align="center"><a href="https://d0m3n1c0x.github.io/workforce-cost-model/simulator/"><img alt="The scenario simulator: levers, FY2027 cost, the sentence for the CFO and scenarios compared month by month." src="site-assets/tool.webp" width="100%"></a></p>
+<p align="center"><a href="https://d0m3n1c0x.github.io/workforce-cost-model/simulator/"><img alt="The scenario simulator: a hiring freeze against the base case, FY2027 month by month, then the outlook after October with the hires the plan takes, then what one employee costs in four countries." src="site-assets/tool.webp" width="100%"></a></p>
 
 ## What you get
 
 | Deliverable | For | What is in it |
 |---|---|---|
-| [`workforce_cost_model.xlsx`](deliverables/workforce_cost_model.xlsx) | the finance team | Twenty sheets: dashboard with a scenario picker, scenario summary and bridge, the FY2027 outlook against budget, FY2026 variance, actuals and budget, FY2027 drivers, one forecast sheet per scenario, the closed months of FY2027, the outlook and the headcount plan month by month, the employee roster, settings and a reconciliation sheet. **Every figure is a live formula**: change a contribution rate, an attrition multiplier or a hiring-freeze month and the model recalculates. |
+| [`workforce_cost_model.xlsx`](deliverables/workforce_cost_model.xlsx) | the finance team | Twenty-one sheets: dashboard with a scenario picker, scenario summary and bridge, the FY2027 outlook against budget, FY2026 variance, actuals and budget, FY2027 drivers, one forecast sheet per scenario, the closed months of FY2027, the outlook and the headcount plan month by month, the backtest of the forecast and the FY2027 range, the employee roster, settings and a reconciliation sheet. **Every figure is a live formula**: change a contribution rate, an attrition multiplier or a hiring-freeze month and the model recalculates. |
 | [Scenario simulator](https://d0m3n1c0x.github.io/workforce-cost-model/simulator/) | the HR business partner and finance, in the budget meeting | Levers for leavers, backfills, growth, a hiring freeze, the pay review, collective renewals, the zloty and closing pay gaps; FY2027 month by month, the bridge and the sentence for the CFO; up to five scenarios side by side; an Excel download; the outlook after the closed months and the hires a month a headcount target takes. Runs on the sample company or on a client's own staff list, and **the file never leaves the computer**. Also: what one employee costs in Italy, Poland, Germany and Spain, item by item. English and Italian. |
 | [`cfo_memo.md`](reports/cfo_memo.md) | the finance director | Answer first: where the FY2026 budget went, what an employee costs in each country, FY2027 under five scenarios, how far the forecast can be trusted, the outlook after October against budget, the headcount plan, eight recommendations, method and limits. |
 | [`docs/method.md`](docs/method.md) · [`docs/verification.md`](docs/verification.md) | reviewers | Every formula and simplification; the source and status of every rate and cap. |
@@ -91,7 +91,7 @@ Every formula and simplification is in [docs/method.md](docs/method.md).
 
 | | |
 |---|---|
-| **Three engines, one answer** | pandas, the Excel model's live formulas (reconciled on 1649 checks, recalculated in CI by LibreOffice) and the browser simulator (checked against the model on 43,152 values) |
+| **Three engines, one answer** | pandas, the Excel model's live formulas (reconciled on 1696 checks, recalculated in CI by LibreOffice) and the browser simulator (checked against the model on 43,152 values) |
 | **Every rate sourced** | a [verification register](docs/verification.md) with the source, its status and the date each rate and ceiling was read |
 | **A client-ready workbook** | inputs in blue, formulas in black, key assumptions in yellow, one Settings sheet, a scenario picker, no dynamic arrays |
 | **Reproducible** | one command rebuilds every output; CI fails if a rebuilt file differs from the committed one |
