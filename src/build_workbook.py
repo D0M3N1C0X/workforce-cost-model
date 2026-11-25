@@ -1147,6 +1147,9 @@ class Model:
         Actuals and Budget sheets; the rules' forecast and the interval from the pipeline's simulation (blue)."""
         b = backtest.backtest(self.r)
         iv = backtest.fy2027_interval(self.r)
+        # Simulated values are rounded to the thousand euro: numpy's random draws can differ in the last bits between
+        # processors, and the workbook has to be byte-identical wherever it is built.
+        k1 = lambda v: float(round(float(v), -3))
         o = b["origins"].set_index("origin")
         title(ws, "How far the forecast can be trusted: FY2026 run month by month",
               "At each month end the forecast's rules ran with only what was known that day. Actual, last month "
@@ -1176,11 +1179,11 @@ class Model:
             put(ws, f"G{r_}", f"=SUM('Budget FY26'!{col(20 + int(k))}{bud_first}:AE{bud_last})", fmt=EUR)
             for j, src in zip("HIJ", "EFG", strict=True):
                 put(ws, f"{j}{r_}", f"={src}{r_}/D{r_}-1", fmt=PCT1)
-            put(ws, f"K{r_}", float(x["low"]), color=BLUE, fmt=EUR)
-            put(ws, f"L{r_}", float(x["high"]), color=BLUE, fmt=EUR)
+            put(ws, f"K{r_}", k1(x["low"]), color=BLUE, fmt=EUR)
+            put(ws, f"L{r_}", k1(x["high"]), color=BLUE, fmt=EUR)
             put(ws, f"M{r_}", f'=IF(AND(D{r_}>=K{r_},D{r_}<=L{r_}),"Yes","No")')
-            put(ws, f"N{r_}", float(x["pace_low"]), color=BLUE, fmt=EUR)
-            put(ws, f"O{r_}", float(x["pace_high"]), color=BLUE, fmt=EUR)
+            put(ws, f"N{r_}", k1(x["pace_low"]), color=BLUE, fmt=EUR)
+            put(ws, f"O{r_}", k1(x["pace_high"]), color=BLUE, fmt=EUR)
             put(ws, f"P{r_}", f'=IF(AND(D{r_}>=N{r_},D{r_}<=O{r_}),"Yes","No")')
             self.check("Backtest", f"origin {k}: actual", x["actual"], f"Backtest!D{r_}")
             self.check("Backtest", f"origin {k}: last month carried forward", x["naive"], f"Backtest!F{r_}")
@@ -1207,7 +1210,7 @@ class Model:
                 ("90% range, with hiring pace: high", iv["pace_high"])]
         for i, (label, v) in enumerate(rows, start=r_ + 1):
             put(ws, f"B{i}", label)
-            put(ws, f"D{i}", float(v), color=BLUE, fmt=EUR)
+            put(ws, f"D{i}", k1(v), color=BLUE, fmt=EUR)
         put(ws, f"B{r_ + 7}", "Error: forecast against actual, as a share of actual. The rules: attrition from the "
                               "leavers so far, 90% of leavers replaced after the time to hire, budget growth. The "
                               "ranges are a floor on the uncertainty: the hiring-pace interval still missed the "
