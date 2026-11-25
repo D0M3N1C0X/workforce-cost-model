@@ -176,7 +176,7 @@ month has closed, so the outlook is the base case and the plan starts from July.
 - The Reconciliation sheet compares Python and formula values for every entity × department
   × month of the actuals, the budget, the variance, the drivers, each scenario, the Scenarios
   summary, the Dashboard, a sample of employees, each country's total cost, the closed months, the outlook, the
-  headcount plan and the outlook against budget: 1649 checks. A value matches within
+  headcount plan and the outlook against budget: 1696 checks. A value matches within
   1 part in 10⁹. The sheet also counts Polish salaries below the minimum wage (none).
 - `openpyxl` writes formulas without results. CI recalculates the whole workbook with
   LibreOffice and [`check_workbook.py`](../src/check_workbook.py) fails on any mismatch and on
