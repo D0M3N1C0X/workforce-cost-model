@@ -4,6 +4,15 @@ What changed in each release. Format: [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Added
+
+- **The forecast put to the test** (memo section 4, `src/backtest.py`): the base case's rules run at every FY2026
+  month-end from September 2025 with only what was known then, against what happened, the month carried forward
+  and the budget. 0.7% off a month ahead and 4.4% nine months ahead, against 6.2-7.0% for the budget but barely
+  better than the month carried forward (0.8% and 4.9%): hiring, not leavers, moves this payroll. An interval
+  from leavers alone covered 1 of 9 runs; adding the hiring pace seen so far, 6 of 9. FY2027: €192.9M, 90% range
+  €184.4M to €207.0M.
+
 ## [2.1.0] - 2026-11-08
 
 ### Added

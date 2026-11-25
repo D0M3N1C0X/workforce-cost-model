@@ -104,6 +104,26 @@ equivalents (F₁, R₁) on payroll only:
 The memo splits the base-case rate effect further: the pay review's own cost, computed from the
 forecast, and the remainder, which is the lower cost per FTE of the June 2026 workforce.
 
+## How far the forecast can be trusted
+
+`src/backtest.py`, memo section 4.
+
+- **Backtest.** At the end of each FY2026 month from September 2025, the base case's rules run with only what was
+  known that day: attrition from the leavers so far (leavers' FTE over average month-end FTE, annualised), the cost
+  per FTE of the people on the payroll that day, the FY2026 budget's growth, 90% of leavers replaced after
+  TIME_TO_HIRE months. The run is set against the actual months that followed and against two naive forecasts:
+  the origin month carried forward, and the budget. Error is the mean absolute percentage error by months ahead.
+  Every person keeps one pay rate all year, so the test is about headcount, not pay.
+- **Interval, leavers only.** 2,000 simulations per run. Per cell, a leaving rate per person-year is drawn from a
+  gamma posterior on the leavers so far (shape leavers + ½, rate person-years: a Jeffreys prior); each month every
+  person leaves with probability 1 - e^(-λ/12); backfills and growth follow the rules, in heads, converted with the
+  cell's FTE per head and cost per FTE.
+- **Interval with hiring pace.** On top, each simulated year hires at a multiple of the rules: e raised to the mean
+  of the months-seen-so-far log ratios of actual to rule hires, resampled and centred, times √(months). The rules
+  stay the centre; the months seen say how far hiring strays from them.
+- **Coverage is reported, not assumed**: the share of runs whose actual remaining cost fell inside the 90% interval.
+- **FY2027** gets both intervals from the full FY2026 year, with the pay review in January.
+
 ## FY2027 after the closed months: the 4+8 outlook
 
 The budget for FY2027 is the base case, approved in June 2026. By the October close, four months

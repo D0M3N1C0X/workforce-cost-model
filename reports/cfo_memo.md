@@ -10,6 +10,7 @@
 
 - **FY2026 closed €9.9M (5.6%) over budget, at €185.5M.** Headcount ran ahead of plan: volume added €10.3M, the department mix €0.09M, while cheaper joiners saved €0.50M.
 - **FY2027 costs €192.9M in the base case (+4.0%).** More FTE add €4.6M: the year opens with the headcount FY2026 closed on, and Customer Service, Tech and Sales keep growing. Cost per FTE adds €2.8M, where the January pay review (2.5% in Italy, 5.0% in Poland, 3.0% in Germany and 3.0% in Spain) adds €3.2M and the lower cost per FTE of the June 2026 workforce takes back €0.3M.
+- **Read it as a range: €184.4M to €207.0M.** Run month by month through FY2026, the same rules were 0.7% off a month ahead and 4.4% nine months ahead, far closer than the budget but barely better than carrying the last month forward: hiring, not leavers, moves this payroll (section 4).
 - **A hiring freeze from October would cut FY2027 to €182.6M** (−1.6%), but the year would close with 411 fewer FTE than the base case: a capacity decision, not a finance one.
 - **Higher attrition barely moves payroll but costs in hiring.** With attrition 30% higher (5.0 points), vacancies offset the backfills, while recruitment rises to €2.49M (€0.52M more).
 - **Starting to close pay gaps in January 2027, before the first pay-transparency reports are due, adds €1.23M to FY2027** and €2.46M in every full year after, loaded with employer costs. The gaps come from [pay-transparency-readiness-kit](https://github.com/D0M3N1C0X/pay-transparency-readiness-kit).
@@ -73,7 +74,21 @@ All 24 departments ran above planned FTE. The largest overruns were in Operation
 
 FY2026 attrition was 16.9% in Italy, 18.2% in Poland, 14.1% in Germany and 15.6% in Spain. The forecast backfills 90% of leavers after 2 months, so each extra point of attrition adds about €105k of recruitment cost at the assumed cost per hire.
 
-## 4. FY2027 after October: outlook against budget
+## 4. How far the forecast can be trusted
+
+A forecast is only worth what it would have got right. So the base case's rules were run at the end of every month of FY2026 from September 2025, with only what was known that day: the leavers so far, the cost per FTE of the people then on the payroll, the growth in the budget then in force. Each run is set against the months that followed, and against two forecasts anyone could make: the last month carried forward, and the budget.
+
+![Forecast errors by months ahead](figures/06_forecast_errors.svg)
+
+- **The rules are 0.7% off one month ahead and 4.4% off 9 months ahead.** The budget is 6.2% to 7.0% off at every distance: it was set for a company that was not going to grow as fast as this one did.
+- **They beat the last month carried forward, but only just** (0.8% and 4.9%). Leavers and backfills are not what moves this payroll: hiring is.
+- **7 of 9 runs came in under what happened**, all of them from origins before April: the company hired for months at about twice what its rules expect, then slowed. A forecast that only replaces leavers cannot see that coming.
+- **An interval that only counts who leaves is false comfort.** Simulating every person's chance of leaving, with the uncertainty on the rate itself, gives intervals of a few tenths of a percent; the months that followed fell inside 1 of 9. Adding how far hiring strayed from the rules in the months seen so far brings it to 6 of 9, with every miss on the long runs, where a hiring surplus has months to build up.
+- **So FY2027 is €192.9M, and a fair 90% range is €184.4M to €207.0M**, wider above than below: hiring can overshoot the rules by more than it can fall short of them. Counting leavers alone would say €192.4M to €193.3M: too narrow to budget on, as the backtest shows. Even the wider range missed the longest runs, so read it as a floor on the uncertainty, not a ceiling.
+
+*Backtest: the base case's rules (attrition from the leavers so far, annualised; 90% of leavers replaced after 2 months; budget growth) from each month-end to June 2026; actuals are the source organisation's own months, with every person on the same pay rate all year. Interval: 2,000 simulations per run; each month every person leaves with the cell's probability, drawn from a gamma posterior on the leavers so far; with hiring pace, each simulated year hires at a multiple of the rules drawn from the spread of actual against rule hires in the months seen so far. Code: src/backtest.py.*
+
+## 5. FY2027 after October: outlook against budget
 
 ![Outlook against budget](figures/05_outlook_bridge.svg)
 
@@ -86,7 +101,7 @@ FY2026 attrition was 16.9% in Italy, 18.2% in Poland, 14.1% in Germany and 15.6%
 
 *Budget: the base case approved in June 2026. Outlook: actuals to October, then the base case's rules from where the year has got to, with the closed months' attrition and the last month's cost per FTE (4+8). The 4 closed months are synthetic: Customer Service losing 50% more people than in FY2026, Tech hiring 40% of its planned growth, pay in Kraków drifting 1.2% above June. The variance splits like FY2026's: volume at budget cost per FTE, rate at outlook FTE.*
 
-## 5. The headcount plan
+## 6. The headcount plan
 
 | Employer | Target, June 2027 | Outlook, June 2027 | Plan hires a month | Hires in FY2027 | Hiring cost | Payroll against outlook |
 |---|---:|---:|---:|---:|---:|---:|
@@ -97,7 +112,7 @@ FY2026 attrition was 16.9% in Italy, 18.2% in Poland, 14.1% in Germany and 15.6%
 
 *Targets against June 2026: Customer Service −3%, Tech +10% and Sales +5%, the rest flat (illustrative). Searches opened after the October close fill posts 2 months later; until then the outlook's backfills arrive. From then, the same hires each month: (target - FTE × q^n) × a / (1 - q^n), with a the monthly attrition, q = 1 - a and n the months left. The largest asks: Customer Service in Poland, 8.3 a month, Customer Service in Italy, 6.7 a month and Customer Service in Germany, 5.5 a month.*
 
-## 6. Recommendations
+## 7. Recommendations
 
 1. **Set the FY2027 budget at the base case plus pay-equity remediation, €194.1M.** The first pay-transparency reports cover 2026 pay and are due in June 2027; gaps that are neither justified nor closed within six months lead to a joint pay assessment.
 2. **Control headcount by position, month by month.** The FY2026 overrun was volume, and actual FTE was already more than 2% above plan by August 2025.
@@ -106,8 +121,9 @@ FY2026 attrition was 16.9% in Italy, 18.2% in Poland, 14.1% in Germany and 15.6%
 5. **Replace the illustrative rates with the payroll provider's:** other INPS contributions and INAIL, the Polish accident rate, PPK participation, the German insurer's additional contribution and accident rate, the Spanish AT/EP tariff, and cost per hire.
 6. **Re-forecast every month from the run-rate.** After October the year is close to budget only because vacancies hide a rising cost per FTE; Kraków's pay drift needs an answer before the January review.
 7. **Open the plan's searches now.** A post opened after the October close is filled in January at the earliest.
+8. **Budget a range, not a point: €184.4M to €207.0M for FY2027.** Hiring pace, not attrition, decides where in it the year lands; review it with the monthly re-forecast.
 
-## 7. Method and limits
+## 8. Method and limits
 
 - **Two engines, one answer.** Every figure is computed in pandas and again by live formulas in [the workbook](../deliverables/workforce_cost_model.xlsx); its Reconciliation sheet checks each pair, and CI recalculates the workbook with LibreOffice.
 - **Month-end population.** FTE and cost are counted on the payroll at each month end, from hire and exit dates.
